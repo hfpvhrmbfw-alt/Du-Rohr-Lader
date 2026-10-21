@@ -1,0 +1,53 @@
+# Legt für jede neue Version in package.json automatisch Tag und GitHub-Release an.
+# Name: DU-Rohr-Lader-<version>, Text: der passende Abschnitt aus CHANGELOG.md.
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Tests
+        run: npm test
+
+      - name: Fehlende Versionen taggen und veröffentlichen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Jede Version mit Abschnitt im CHANGELOG, die noch keinen Tag hat, bekommt Tag und Release
+          # auf dem Commit, mit dem package.json diese Version erhalten hat. So holt der Lauf auch
+          # verpasste Versionen nach.
+          for tag in $(grep -oE '^## DU-Rohr-Lader-[0-9]+\.[0-9]+\.[0-9]+' CHANGELOG.md | cut -c4- | tac); do
+            if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then continue; fi
+            version=${tag#DU-Rohr-Lader-}
+            commit=$(git log --reverse --format=%H -G"\"version\": \"${version//./\\.}\"" -- package.json | head -1)
+            if [ -z "$commit" ]; then
+              echo "::warning::$tag steht im CHANGELOG, aber package.json hatte nie diese Version, übersprungen."
+              continue
+            fi
+            awk -v tag="$tag" '
+              $0 ~ "^## " tag "( |$)" { on = 1; next }
+              on && /^## / { exit }
+              on { print }
+            ' CHANGELOG.md > notes.md
+            git tag -a "$tag" -m "$tag" "$commit"
+            git push origin "$tag"
+            gh release create "$tag" --title "$tag" --notes-file notes.md --verify-tag
+          done
