@@ -1,0 +1,10 @@
+{
+  "note": "Bitte nur eigene, CC-lizenzierte oder gemeinfreie Videos eintragen. Leere URLs werden übersprungen.",
+  "cases": [
+    { "id": "short",    "url": "" },
+    { "id": "long",     "url": "" },
+    { "id": "playlist", "url": "" },
+    { "id": "age",      "url": "" },
+    { "id": "live-rec", "url": "" }
+  ]
+}

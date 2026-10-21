@@ -1,0 +1,21 @@
+# Abhängigkeiten
+node_modules/
+
+# Laufzeitdaten und Downloads (falls YTD_DATA_DIR ins Projekt zeigt)
+data/
+downloads/
+secrets.json
+*.part
+*.ytdl
+
+# Umgebung und Geheimnisse
+.env
+.env.*
+
+# System und Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+coverage/

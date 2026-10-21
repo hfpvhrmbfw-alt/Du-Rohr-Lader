@@ -1,0 +1,23 @@
+{
+  "note": "Formatliste wie mapInfoJson sie liefert (synthetisch, angelehnt an typische YouTube-Formate).",
+  "formats": [
+    { "id": "18",  "kind": "muxed", "ext": "mp4",  "height": 360,  "fps": 25, "vcodec": "avc1.42001E",  "acodec": "mp4a.40.2", "abrKbps": 96,  "tbrKbps": 500,  "sizeBytes": 1000000, "drm": false },
+    { "id": "139", "kind": "audio", "ext": "m4a",  "height": null, "fps": null, "vcodec": null, "acodec": "mp4a.40.5", "abrKbps": 48,  "tbrKbps": 48,   "sizeBytes": 100000,  "drm": false },
+    { "id": "140", "kind": "audio", "ext": "m4a",  "height": null, "fps": null, "vcodec": null, "acodec": "mp4a.40.2", "abrKbps": 129, "tbrKbps": 129,  "sizeBytes": 300000,  "drm": false },
+    { "id": "251", "kind": "audio", "ext": "webm", "height": null, "fps": null, "vcodec": null, "acodec": "opus",      "abrKbps": 135, "tbrKbps": 135,  "sizeBytes": 310000,  "drm": false },
+    { "id": "136", "kind": "video", "ext": "mp4",  "height": 720,  "fps": 25, "vcodec": "avc1.4d401f",  "acodec": null, "abrKbps": null, "tbrKbps": 1500, "sizeBytes": 5000000,  "drm": false },
+    { "id": "247", "kind": "video", "ext": "webm", "height": 720,  "fps": 25, "vcodec": "vp9",          "acodec": null, "abrKbps": null, "tbrKbps": 1200, "sizeBytes": 4000000,  "drm": false },
+    { "id": "137", "kind": "video", "ext": "mp4",  "height": 1080, "fps": 25, "vcodec": "avc1.640028",  "acodec": null, "abrKbps": null, "tbrKbps": 3000, "sizeBytes": 9000000,  "drm": false },
+    { "id": "248", "kind": "video", "ext": "webm", "height": 1080, "fps": 25, "vcodec": "vp9",          "acodec": null, "abrKbps": null, "tbrKbps": 2500, "sizeBytes": 8000000,  "drm": false },
+    { "id": "401", "kind": "video", "ext": "mp4",  "height": 2160, "fps": 25, "vcodec": "av01.0.12M.08","acodec": null, "abrKbps": null, "tbrKbps": 15000,"sizeBytes": 50000000, "drm": true }
+  ],
+  "cases": [
+    { "name": "Video mp4 beste Qualität (DRM-Format wird ausgelassen)", "options": { "mode": "video", "container": "mp4" }, "expected": { "video": "137", "audio": "140", "merge": true, "transcode": false } },
+    { "name": "Video webm max. 720p", "options": { "mode": "video", "container": "webm", "maxHeight": 720 }, "expected": { "video": "247", "audio": "251", "merge": true, "transcode": false } },
+    { "name": "Video mp4 max. 360p nimmt das kombinierte Format", "options": { "mode": "video", "container": "mp4", "maxHeight": 360 }, "expected": { "video": "18", "audio": null, "merge": false, "transcode": false } },
+    { "name": "Audio original bevorzugt m4a", "options": { "mode": "audio", "audioFormat": "original" }, "expected": { "video": null, "audio": "140", "merge": false, "transcode": false } },
+    { "name": "Audio opus nimmt webm/opus ohne Umwandlung", "options": { "mode": "audio", "audioFormat": "opus" }, "expected": { "video": null, "audio": "251", "merge": false, "transcode": false } },
+    { "name": "Audio mp3 wandelt um", "options": { "mode": "audio", "audioFormat": "mp3", "audioBitrateKbps": 192 }, "expected": { "video": null, "audio": "140", "merge": false, "transcode": true } },
+    { "name": "Audio flac wandelt um", "options": { "mode": "audio", "audioFormat": "flac" }, "expected": { "video": null, "audio": "251", "merge": false, "transcode": true } }
+  ]
+}

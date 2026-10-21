@@ -1,0 +1,22 @@
+{
+  "note": "Eingabe für logic.nextStrategy → erwartete nächste Strategie (null = Kette zu Ende).",
+  "base": {
+    "chain": ["ytdlp", "ytdlp-cookies", "browser-capture", "official"],
+    "available": { "ytdlp": true, "ytdlp-cookies": true, "browser-capture": true, "official": true },
+    "cookieBrowser": "firefox",
+    "allowBrowserCapture": true,
+    "isPlaylist": false
+  },
+  "cases": [
+    { "name": "Start", "input": { "tried": [], "lastErrorCode": null }, "expected": "ytdlp" },
+    { "name": "Bot-Check → Cookies", "input": { "tried": ["ytdlp"], "lastErrorCode": "bot_check" }, "expected": "ytdlp-cookies" },
+    { "name": "Altersfreigabe ohne Cookie-Browser → Aufnahme", "input": { "tried": ["ytdlp"], "lastErrorCode": "age_restricted", "cookieBrowser": null }, "expected": "browser-capture" },
+    { "name": "Netzwerkfehler: Cookies und Aufnahme helfen nicht → Hinweis", "input": { "tried": ["ytdlp"], "lastErrorCode": "network" }, "expected": "official" },
+    { "name": "Gelöscht beendet die Kette", "input": { "tried": ["ytdlp"], "lastErrorCode": "deleted" }, "expected": null },
+    { "name": "DRM beendet die Kette", "input": { "tried": ["ytdlp"], "lastErrorCode": "drm" }, "expected": null },
+    { "name": "Playlist: keine Aufnahme", "input": { "tried": ["ytdlp", "ytdlp-cookies"], "lastErrorCode": "bot_check", "isPlaylist": true }, "expected": "official" },
+    { "name": "Aufnahme nicht erlaubt", "input": { "tried": ["ytdlp", "ytdlp-cookies"], "lastErrorCode": "region_blocked", "allowBrowserCapture": false }, "expected": "official" },
+    { "name": "yt-dlp fehlt → überspringen", "input": { "tried": [], "lastErrorCode": null, "available": { "ytdlp": false, "ytdlp-cookies": false, "browser-capture": true, "official": true } }, "expected": "browser-capture" },
+    { "name": "Alles versucht", "input": { "tried": ["ytdlp", "ytdlp-cookies", "browser-capture", "official"], "lastErrorCode": "needs_user_action" }, "expected": null }
+  ]
+}

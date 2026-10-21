@@ -1,0 +1,22 @@
+{
+  "note": "Eingabe → erwartetes Ergebnis von logic.parseUrl. Video-IDs sind Beispiele.",
+  "cases": [
+    { "input": "https://www.youtube.com/watch?v=aqz-KE-bpKQ", "expected": { "ok": true, "kind": "video", "videoId": "aqz-KE-bpKQ", "playlistId": null, "normalizedUrl": "https://www.youtube.com/watch?v=aqz-KE-bpKQ", "playlistUrl": null } },
+    { "input": "  youtu.be/aqz-KE-bpKQ?t=42 ", "expected": { "ok": true, "kind": "video", "videoId": "aqz-KE-bpKQ", "playlistId": null, "normalizedUrl": "https://www.youtube.com/watch?v=aqz-KE-bpKQ", "playlistUrl": null } },
+    { "input": "https://m.youtube.com/watch?v=aqz-KE-bpKQ&feature=share", "expected": { "ok": true, "kind": "video", "videoId": "aqz-KE-bpKQ", "playlistId": null, "normalizedUrl": "https://www.youtube.com/watch?v=aqz-KE-bpKQ", "playlistUrl": null } },
+    { "input": "https://www.youtube.com/shorts/abcdefghijk", "expected": { "ok": true, "kind": "short", "videoId": "abcdefghijk", "playlistId": null, "normalizedUrl": "https://www.youtube.com/watch?v=abcdefghijk", "playlistUrl": null } },
+    { "input": "https://www.youtube.com/live/abcdefghijk?si=x", "expected": { "ok": true, "kind": "live", "videoId": "abcdefghijk", "playlistId": null, "normalizedUrl": "https://www.youtube.com/watch?v=abcdefghijk", "playlistUrl": null } },
+    { "input": "https://www.youtube-nocookie.com/embed/abcdefghijk", "expected": { "ok": true, "kind": "video", "videoId": "abcdefghijk", "playlistId": null, "normalizedUrl": "https://www.youtube.com/watch?v=abcdefghijk", "playlistUrl": null } },
+    { "input": "https://music.youtube.com/watch?v=abcdefghijk", "expected": { "ok": true, "kind": "video", "videoId": "abcdefghijk", "playlistId": null, "normalizedUrl": "https://www.youtube.com/watch?v=abcdefghijk", "playlistUrl": null } },
+    { "input": "https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPboYG", "expected": { "ok": true, "kind": "playlist", "videoId": null, "playlistId": "PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPboYG", "normalizedUrl": "https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPboYG", "playlistUrl": "https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPboYG" } },
+    { "input": "https://www.youtube.com/watch?v=abcdefghijk&list=PLabc123", "expected": { "ok": true, "kind": "video-in-playlist", "videoId": "abcdefghijk", "playlistId": "PLabc123", "normalizedUrl": "https://www.youtube.com/watch?v=abcdefghijk", "playlistUrl": "https://www.youtube.com/playlist?list=PLabc123" } },
+    { "input": "https://www.youtube.com/@BlenderStudio", "expected": { "ok": true, "kind": "channel", "videoId": null, "playlistId": null, "normalizedUrl": "https://www.youtube.com/@BlenderStudio", "playlistUrl": null } },
+    { "input": "https://vimeo.com/76979871", "expected": { "ok": true, "kind": "other-site", "videoId": null, "playlistId": null, "normalizedUrl": "https://vimeo.com/76979871", "playlistUrl": null } },
+    { "input": "", "expected": { "ok": false, "error": "empty" } },
+    { "input": "hallo welt", "expected": { "ok": false, "error": "invalid_url" } },
+    { "input": "ftp://youtube.com/watch?v=abcdefghijk", "expected": { "ok": false, "error": "unsupported_scheme" } },
+    { "input": "https://www.youtube.com/watch?v=kurz", "expected": { "ok": false, "error": "missing_id" } },
+    { "input": "https://www.youtube.com/feed/subscriptions", "expected": { "ok": false, "error": "missing_id" } },
+    { "input": "localhost", "expected": { "ok": false, "error": "invalid_url" } }
+  ]
+}

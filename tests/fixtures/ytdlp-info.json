@@ -1,0 +1,54 @@
+{
+  "note": "Gekürzte Ausgaben von `yt-dlp -J` (synthetisch, Feldnamen wie bei yt-dlp) → erwartetes Modell-Objekt.",
+  "cases": [
+    {
+      "name": "Einzelvideo",
+      "input": {
+        "id": "abcdefghijk", "title": "Mein Testvideo", "uploader": "Anna", "channel": "Anna Kanal",
+        "duration": 213, "upload_date": "20250102", "license": "Creative Commons Attribution license (reuse allowed)",
+        "live_status": "not_live", "age_limit": 0, "webpage_url": "https://www.youtube.com/watch?v=abcdefghijk",
+        "thumbnail": "https://i.ytimg.com/vi/abcdefghijk/maxresdefault.jpg",
+        "formats": [
+          { "format_id": "sb0", "ext": "mhtml", "vcodec": "none", "acodec": "none" },
+          { "format_id": "140", "ext": "m4a", "vcodec": "none", "acodec": "mp4a.40.2", "abr": 129.5, "tbr": 129.5, "filesize": 3400000 },
+          { "format_id": "137", "ext": "mp4", "vcodec": "avc1.640028", "acodec": "none", "height": 1080, "fps": 25, "tbr": 3000, "filesize_approx": 80000000 },
+          { "format_id": "18", "ext": "mp4", "vcodec": "avc1.42001E", "acodec": "mp4a.40.2", "height": 360, "fps": 25, "abr": 96, "tbr": 500, "has_drm": false }
+        ]
+      },
+      "expected": {
+        "id": "abcdefghijk", "url": "https://www.youtube.com/watch?v=abcdefghijk", "title": "Mein Testvideo", "uploader": "Anna",
+        "durationSec": 213, "thumbnailUrl": "https://i.ytimg.com/vi/abcdefghijk/maxresdefault.jpg", "uploadDate": "2025-01-02",
+        "license": "Creative Commons Attribution license (reuse allowed)", "liveStatus": "none", "ageLimit": 0, "kind": "video", "entries": [],
+        "formats": [
+          { "id": "140", "kind": "audio", "ext": "m4a", "height": null, "fps": null, "vcodec": null, "acodec": "mp4a.40.2", "abrKbps": 129.5, "tbrKbps": 129.5, "sizeBytes": 3400000, "drm": false },
+          { "id": "137", "kind": "video", "ext": "mp4", "height": 1080, "fps": 25, "vcodec": "avc1.640028", "acodec": null, "abrKbps": null, "tbrKbps": 3000, "sizeBytes": 80000000, "drm": false },
+          { "id": "18", "kind": "muxed", "ext": "mp4", "height": 360, "fps": 25, "vcodec": "avc1.42001E", "acodec": "mp4a.40.2", "abrKbps": 96, "tbrKbps": 500, "sizeBytes": null, "drm": false }
+        ]
+      }
+    },
+    {
+      "name": "Livestream-Aufzeichnung, Altersfreigabe",
+      "input": { "id": "zyxwvutsrqp", "title": "Aufzeichnung", "channel": "Kanal", "live_status": "was_live", "age_limit": 18, "original_url": "https://youtu.be/zyxwvutsrqp", "thumbnails": [{ "url": "a.jpg" }, { "url": "b.jpg" }], "formats": [] },
+      "expected": { "id": "zyxwvutsrqp", "url": "https://youtu.be/zyxwvutsrqp", "title": "Aufzeichnung", "uploader": "Kanal", "durationSec": null, "thumbnailUrl": "b.jpg", "uploadDate": null, "license": null, "liveStatus": "was_live", "ageLimit": 18, "kind": "video", "entries": [], "formats": [] }
+    },
+    {
+      "name": "Playlist (flach)",
+      "input": {
+        "_type": "playlist", "id": "PLabc123", "title": "Meine Liste", "uploader": "Anna", "webpage_url": "https://www.youtube.com/playlist?list=PLabc123",
+        "entries": [
+          { "_type": "url", "id": "abcdefghijk", "url": "https://www.youtube.com/watch?v=abcdefghijk", "title": "Teil 1", "duration": 60 },
+          null,
+          { "_type": "url", "id": "bcdefghijkl", "url": "https://www.youtube.com/watch?v=bcdefghijkl", "title": "Teil 2" }
+        ]
+      },
+      "expected": {
+        "id": "PLabc123", "url": "https://www.youtube.com/playlist?list=PLabc123", "title": "Meine Liste", "uploader": "Anna", "durationSec": null, "thumbnailUrl": null, "uploadDate": null, "license": null, "liveStatus": "none", "ageLimit": 0, "kind": "playlist",
+        "entries": [
+          { "id": "abcdefghijk", "url": "https://www.youtube.com/watch?v=abcdefghijk", "title": "Teil 1", "durationSec": 60 },
+          { "id": "bcdefghijkl", "url": "https://www.youtube.com/watch?v=bcdefghijkl", "title": "Teil 2", "durationSec": null }
+        ],
+        "formats": []
+      }
+    }
+  ]
+}

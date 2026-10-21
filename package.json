@@ -1,0 +1,14 @@
+{
+  "name": "du-rohr-lader",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Lokaler Downloader für eigene, CC-lizenzierte oder gemeinfreie Videos (PWA + lokaler Node-Server).",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "start": "node server/main.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

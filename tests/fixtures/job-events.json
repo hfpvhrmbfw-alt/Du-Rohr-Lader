@@ -1,0 +1,50 @@
+{
+  "note": "Ereignisfolge für logic.applyJobEvent → erwarteter Endzustand (nur die genannten Felder werden verglichen).",
+  "cases": [
+    {
+      "name": "Erfolgreicher Lauf",
+      "events": [
+        { "type": "started", "strategy": "ytdlp" },
+        { "type": "phase", "phase": "downloading" },
+        { "type": "title", "title": "Clip" },
+        { "type": "progress", "percent": 42.5, "downloadedBytes": 425, "totalBytes": 1000, "speedBps": 100, "etaSec": 6 },
+        { "type": "phase", "phase": "postprocessing" },
+        { "type": "file", "path": "/out/Clip.mp4" },
+        { "type": "file", "path": "/out/Clip.mp4" },
+        { "type": "done", "at": "2026-10-13T10:00:00Z" }
+      ],
+      "expected": { "state": "done", "strategy": "ytdlp", "tried": ["ytdlp"], "percent": 100, "title": "Clip", "files": ["/out/Clip.mp4"], "speedBps": null, "errorCode": null, "finishedAt": "2026-10-13T10:00:00Z" }
+    },
+    {
+      "name": "Fallback und endgültiges Scheitern, danach keine Änderung mehr",
+      "events": [
+        { "type": "started", "strategy": "ytdlp" },
+        { "type": "strategy-failed", "strategy": "ytdlp", "errorCode": "bot_check", "detail": "Sign in" },
+        { "type": "started", "strategy": "ytdlp-cookies" },
+        { "type": "strategy-failed", "strategy": "ytdlp-cookies", "errorCode": "cookies_unavailable", "detail": "no db" },
+        { "type": "failed", "errorCode": "cookies_unavailable", "detail": "no db", "at": "2026-10-13T10:00:00Z" },
+        { "type": "progress", "percent": 50, "downloadedBytes": null, "totalBytes": null, "speedBps": null, "etaSec": null }
+      ],
+      "expected": { "state": "failed", "strategy": "ytdlp-cookies", "tried": ["ytdlp", "ytdlp-cookies"], "percent": null, "errorCode": "cookies_unavailable", "attempt": 1 }
+    },
+    {
+      "name": "Abbrechen und Wiederholen",
+      "events": [
+        { "type": "started", "strategy": "ytdlp" },
+        { "type": "progress", "percent": 130, "downloadedBytes": 1, "totalBytes": 1, "speedBps": 1, "etaSec": 0 },
+        { "type": "cancelled", "at": "2026-10-13T10:00:00Z" },
+        { "type": "retry" }
+      ],
+      "expected": { "state": "queued", "strategy": null, "tried": [], "percent": null, "errorCode": null, "attempt": 2, "finishedAt": null }
+    },
+    {
+      "name": "Fortschritt wird auf 100 begrenzt, Playlist-Position übernommen",
+      "events": [
+        { "type": "started", "strategy": "ytdlp" },
+        { "type": "progress", "percent": 0, "downloadedBytes": null, "totalBytes": null, "speedBps": null, "etaSec": null, "playlistIndex": 2, "playlistCount": 5 },
+        { "type": "progress", "percent": 130, "downloadedBytes": 1, "totalBytes": 1, "speedBps": 1, "etaSec": 0 }
+      ],
+      "expected": { "state": "downloading", "percent": 100, "playlistIndex": 2, "playlistCount": 5 }
+    }
+  ]
+}

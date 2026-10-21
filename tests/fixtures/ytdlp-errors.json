@@ -1,0 +1,21 @@
+{
+  "note": "stderr-Ausschnitte von yt-dlp → Fehlercode. Texte nachgebildet nach Meldungen von YouTube bzw. yt-dlp (Quelltext 2026.08.19); nicht live erfasst, weil YouTube im Testcontainer gesperrt ist.",
+  "cases": [
+    { "stderr": "ERROR: [youtube] abcdefghijk: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies.", "expected": "bot_check" },
+    { "stderr": "ERROR: [youtube] abcdefghijk: Sign in to confirm your age. This video may be inappropriate for some users. Use --cookies-from-browser or --cookies for the authentication.", "expected": "age_restricted" },
+    { "stderr": "ERROR: [youtube] abcdefghijk: Private video. Sign in if you've been granted access to this video. Use --cookies-from-browser or --cookies for the authentication.", "expected": "private" },
+    { "stderr": "ERROR: [youtube] abcdefghijk: Video unavailable. This video has been removed by the uploader", "expected": "deleted" },
+    { "stderr": "ERROR: [youtube] abcdefghijk: Video unavailable. The uploader has not made this video available in your country", "expected": "region_blocked" },
+    { "stderr": "ERROR: [youtube] abcdefghijk: Join this channel to get access to members-only content like this video, and other exclusive perks.", "expected": "members_only" },
+    { "stderr": "ERROR: [youtube] abcdefghijk: Video unavailable. This content isn't available, try again later. The current session has been rate-limited by YouTube for up to an hour.", "expected": "rate_limited" },
+    { "stderr": "ERROR: unable to download video data: HTTP Error 429: Too Many Requests", "expected": "rate_limited" },
+    { "stderr": "ERROR: [youtube] abcdefghijk: This live event will begin in a few moments.", "expected": "live_not_finished" },
+    { "stderr": "ERROR: [youtube] abcdefghijk: This video is DRM protected", "expected": "drm" },
+    { "stderr": "ERROR: [youtube] abcdefghijk: Unable to download API page: <urlopen error Tunnel connection failed: 403 Forbidden> (caused by URLError(OSError('Tunnel connection failed: 403 Forbidden')))", "expected": "network" },
+    { "stderr": "ERROR: [generic] Unsupported URL: https://example.com/", "expected": "unsupported_site" },
+    { "stderr": "ERROR: 'kein-link' is not a valid URL. Set --default-search \"ytsearch\" (or run  yt-dlp \"ytsearch:kein-link\" ) to search YouTube", "expected": "invalid_url" },
+    { "stderr": "ERROR: could not find firefox cookies database in /Users/anna/Library/Application Support/Firefox", "expected": "cookies_unavailable" },
+    { "stderr": "ERROR: Postprocessing: ffprobe and ffmpeg not found. Please install or provide the path using --ffmpeg-location", "expected": "tool_missing" },
+    { "stderr": "ERROR: something completely different happened", "expected": "unknown" }
+  ]
+}
