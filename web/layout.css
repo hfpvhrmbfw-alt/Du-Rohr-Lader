@@ -7,11 +7,11 @@ body { -webkit-tap-highlight-color:transparent; }
 /* ---------- iOS: Notch, Dynamic Island und Home-Indikator ---------- */
 .wrap { padding-left:max(var(--gutter), env(safe-area-inset-left)); padding-right:max(var(--gutter), env(safe-area-inset-right)); }
 .runhead { padding-top:env(safe-area-inset-top); }
-footer { padding-bottom:calc(40px + env(safe-area-inset-bottom)); }
+footer { padding-bottom:calc(var(--s5) + env(safe-area-inset-bottom)); }
 
 /* ---------- Kopplung iPhone (QR-Code) ---------- */
-.pairing { display:grid; grid-template-columns:minmax(140px,200px) 1fr; gap:var(--s5); align-items:start; margin:var(--s3) 0 var(--s4); }
-.pairing p { margin:0 0 var(--s3); }
+.pairing { display:grid; grid-template-columns:minmax(120px,160px) 1fr; gap:var(--s4); align-items:start; margin:var(--s2) 0 var(--s3); }
+.pairing p { margin:0 0 var(--s2); }
 .qr svg { display:block; width:100%; height:auto; border:1px solid var(--line); }
 
 body.dropping #laden { outline:2px dashed var(--accent); outline-offset:4px; }
@@ -21,7 +21,7 @@ body.dropping #laden { outline:2px dashed var(--accent); outline-offset:4px; }
   :root { --maxw-wide:1360px; }
   .runhead .wrap, main.wrap, footer .wrap { max-width:var(--maxw-wide); }
   main.wrap {
-    display:grid; align-items:start; column-gap:var(--s6);
+    display:grid; align-items:start; column-gap:var(--s4);
     grid-template-columns:minmax(0,7fr) minmax(340px,5fr);
     grid-template-areas:"hero hero" "rule rule" "note note" "laden jobs" "verlauf jobs" "einstellungen jobs";
   }
@@ -29,10 +29,10 @@ body.dropping #laden { outline:2px dashed var(--accent); outline-offset:4px; }
   main > .rule-heavy { grid-area:rule; }
   main > #global-note { grid-area:note; }
   main > #laden { grid-area:laden; }
-  main > #auftraege { grid-area:jobs; position:sticky; top:calc(64px + env(safe-area-inset-top)); max-height:calc(100vh - 88px); overflow:auto; overscroll-behavior:contain; }
+  main > #auftraege { grid-area:jobs; position:sticky; top:calc(52px + env(safe-area-inset-top)); max-height:calc(100vh - 68px); overflow:auto; overscroll-behavior:contain; }
   main > #verlauf { grid-area:verlauf; }
   main > #einstellungen { grid-area:einstellungen; }
-  #auftraege .job-head { flex-direction:column; gap:var(--s2); }
+  #auftraege .job-head { flex-direction:column; gap:var(--s1); }
 }
 
 /* ---------- Telefon: Abschnitte als Tab-Leiste unten, Daumen-Bedienung ---------- */
@@ -42,20 +42,20 @@ body.dropping #laden { outline:2px dashed var(--accent); outline-offset:4px; }
     background:var(--surface); border-top:1px solid var(--line);
     padding:0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
-  .runhead nav a { flex:1 1 0; min-width:0; display:flex; align-items:center; justify-content:center; min-height:52px; font-size:10px; letter-spacing:.04em; text-underline-offset:4px; }
-  body { padding-bottom:calc(52px + env(safe-area-inset-bottom)); }
-  .section { scroll-margin-top:calc(56px + env(safe-area-inset-top)); }
+  .runhead nav a { flex:1 1 0; min-width:0; display:flex; align-items:center; justify-content:center; min-height:48px; font-size:10px; letter-spacing:.04em; text-underline-offset:4px; }
+  body { padding-bottom:calc(48px + env(safe-area-inset-bottom)); }
+  .section { scroll-margin-top:calc(48px + env(safe-area-inset-top)); }
   .mode-switch { width:100%; }
   .mode-switch button { flex:1 1 0; }
-  #options .actions .btn, #download-btn { width:100%; justify-content:center; }
+  #options .actions .btn, #download-btn, #probe-btn { width:100%; justify-content:center; }
   .pairing { grid-template-columns:1fr; }
-  .qr { max-width:240px; }
+  .qr { max-width:200px; }
 
   /* Verlauf als Karten statt breiter Tabelle */
   #verlauf .table-scroll { overflow:visible; }
   #verlauf table.data, #verlauf table.data tbody { display:block; background:none; }
   #verlauf table.data thead { display:none; }
-  #verlauf table.data tr { display:grid; grid-template-columns:1fr auto; gap:var(--s1) var(--s3); align-items:center; padding:var(--s3) 0; border-bottom:1px solid var(--line); }
+  #verlauf table.data tr { display:grid; grid-template-columns:1fr auto; gap:var(--s1) var(--s3); align-items:center; padding:var(--s2) 0; border-bottom:1px solid var(--line); }
   #verlauf table.data td { display:block; border:0; padding:0; }
   #verlauf table.data td:nth-child(1) { grid-area:1 / 1; color:var(--muted); }
   #verlauf table.data td:nth-child(3) { grid-area:1 / 2; justify-self:end; }
@@ -75,6 +75,6 @@ body.dropping #laden { outline:2px dashed var(--accent); outline-offset:4px; }
 
 /* ---------- Als App vom Home-Bildschirm gestartet ---------- */
 @media (display-mode:standalone) {
-  .hero { padding-top:var(--s5); }
+  .hero { padding-top:var(--s3); }
   body { overscroll-behavior-y:none; }
 }

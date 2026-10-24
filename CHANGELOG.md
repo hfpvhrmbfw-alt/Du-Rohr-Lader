@@ -10,6 +10,13 @@ Alle Neuerungen landen in einer neuen Version. Versionen heißen `DU-Rohr-Lader-
 Tag und Release legt `.github/workflows/release.yml` beim Merge nach `main` automatisch an,
 sobald `package.json` eine Version trägt, die es noch nicht als Tag gibt.
 
+## DU-Rohr-Lader-1.1.1 – 2026-10-24
+
+### Geändert
+- Kompaktere Ansicht auf Desktop und iPhone: kleinerer Kopf, engere Abstände zwischen und in den Kästen, dichtere Zeilen, Tabellen, Knöpfe und Eingabefelder. Eine Seite mit Playlist, Aufträgen und Einstellungen ist rund ein Drittel kürzer. Touch-Ziele bleiben mindestens 44 pt groß.
+- „Prüfen“ steht auf dem Telefon mittig im Knopf wie „Herunterladen“.
+- Screenshots in `docs/screenshots` erneuert.
+
 ## DU-Rohr-Lader-1.0.1 – 2026-10-21
 
 ### Neu
