@@ -4,7 +4,7 @@ import { AUDIO_BITRATES, AUDIO_FORMATS, COOKIE_BROWSERS, MAX_HEIGHTS, VIDEO_CONT
 import { parseUrl, pickFormats } from '/core/logic.js';
 import { api } from './api.js';
 import * as T from './texts.js';
-import { $, errorNote, fillSelect, h, note, previewText, renderDevices, renderHistoryRow, renderJob, renderMeta, renderTools, setNote } from './ui.js';
+import { $, errorNote, fillSelect, h, note, previewText, renderDevices, renderHistoryRow, renderJob, renderMeta, renderPicker, renderTools, setNote } from './ui.js';
 
 const state = {
   status: null,
@@ -12,6 +12,7 @@ const state = {
   meta: null,
   url: '',
   parsed: null,
+  selected: new Set(), // ausgewählte Playlist-Positionen
   jobs: new Map(),
   history: [],
 };
@@ -41,6 +42,40 @@ function showOptions() {
   $('#opt-thumb').closest('label').hidden = o.mode === 'video' && o.container === 'webm';
   const formats = state.meta?.kind === 'video' ? state.meta.formats : [];
   $('#preview').textContent = previewText(pickFormats(formats, o), o, formats.length > 0);
+  showPicker();
+}
+
+// ---------- Titelauswahl (Playlist) ----------
+
+/** Gilt die Auswahl? Nur wenn eine Playlist geladen wird, nicht das einzelne Video daraus. */
+const picking = () => state.meta?.kind === 'playlist' && (state.parsed?.kind === 'playlist' || (state.parsed?.kind === 'video-in-playlist' && state.options.wholePlaylist));
+
+function showPicker() {
+  const picker = $('#picker');
+  if (!picker) return;
+  picker.hidden = !picking();
+  const total = state.meta.entries.length;
+  for (const box of picker.querySelectorAll('input[data-index]')) box.checked = state.selected.has(Number(box.dataset.index));
+  $('#pick-count').textContent = T.PICK.count(state.selected.size, total);
+  $('#download-btn').disabled = picking() && state.selected.size === 0;
+}
+
+const pickHandlers = {
+  pick: (index, on) => {
+    if (on) state.selected.add(index);
+    else state.selected.delete(index);
+    showPicker();
+  },
+  all: (on) => {
+    state.selected = new Set(on ? state.meta.entries.map((e) => e.index) : []);
+    showPicker();
+  },
+};
+
+/** null = ganze Playlist; sonst die ausgewählten Positionen. */
+function playlistItems() {
+  if (!picking() || state.selected.size === state.meta.entries.length) return null;
+  return [...state.selected].sort((a, b) => a - b);
 }
 
 function initOptions(defaults) {
@@ -63,6 +98,7 @@ async function probe(e) {
   const input = $('#url').value;
   const parsed = parseUrl(input);
   state.meta = null;
+  $('#download-btn').disabled = false;
   $('#meta').hidden = true;
   $('#options').hidden = true;
   if (!parsed.ok) return setNote($('#probe-note'), note('warn', 'Prüfen', T.URL_ERROR[parsed.error]));
@@ -87,7 +123,9 @@ async function probe(e) {
   }
   setNote($('#probe-note'), null);
   state.meta = res.metadata;
-  $('#meta').replaceChildren(renderMeta(res.metadata, res.strategy));
+  state.selected = new Set(res.metadata.entries.map((e) => e.index));
+  const picker = res.metadata.kind === 'playlist' ? renderPicker(res.metadata.entries, state.selected, pickHandlers) : null;
+  $('#meta').replaceChildren(renderMeta(res.metadata, res.strategy, picker));
   $('#meta').hidden = false;
   $('#options').hidden = false;
   showOptions();
@@ -95,7 +133,9 @@ async function probe(e) {
 
 async function download() {
   readOptions();
-  const r = await api.addJob(state.url, state.options);
+  const items = playlistItems();
+  if (items && items.length === 0) return setNote($('#probe-note'), note('warn', 'Auswahl', T.PICK.nothing));
+  const r = await api.addJob(state.url, state.options, items);
   if (r.status === 403) return $('#legal').showModal();
   if (!r.ok) return setNote($('#probe-note'), note('err', 'Fehler', 'Auftrag konnte nicht angelegt werden.'));
   upsertJob(r.data);

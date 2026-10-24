@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { createProcessRunner } from '../src/adapters/process.js';
 import { createYtDlpEngine } from '../src/adapters/ytdlp/engine.js';
@@ -27,6 +27,13 @@ before(async () => {
   assert.equal(r.status, 0, 'Testclip erzeugen');
   const data = readFileSync(clip);
   server = createServer((req, res) => {
+    if (req.url === '/feed.xml') {
+      // Kleine „Playlist“ als RSS-Feed: Teil 2 fehlt auf dem Server (wie ein gelöschtes Video).
+      const items = [1, 2, 3, 4].map((i) => `<item><title>Teil ${i}</title><guid>t${i}</guid><enclosure url="${base}/${i === 2 ? 'gibtsnicht' : 'clip'}.mp4?t${i}" type="video/mp4" length="1"/></item>`).join('');
+      res.writeHead(200, { 'content-type': 'application/rss+xml' });
+      return res.end(`<?xml version="1.0"?><rss version="2.0"><channel><title>Testliste</title><link>${base}/</link>${items}</channel></rss>`);
+    }
+    if (req.url.startsWith('/clip.mp4?')) req.url = '/clip.mp4';
     if (req.url === '/clip.mp4' || req.url === '/slow.mp4') {
       res.writeHead(200, { 'content-type': 'video/mp4', 'content-length': data.length });
       if (req.url === '/clip.mp4') return res.end(data);
@@ -103,4 +110,27 @@ test('A: Abbrechen beendet yt-dlp', { skip }, async () => {
   const r = await engine().download({ url: `${base}/slow.mp4`, isPlaylist: false, outputDir: join(dir, 'cancel'), options: DEFAULT_OPTIONS }, ctx(ac.signal));
   assert.deepEqual(r, { ok: false, errorCode: 'cancelled', detail: null });
   assert.ok(Date.now() - started < 6000);
+});
+
+test('A: Playlist mit Auswahl lädt nur die gewählten Titel', { skip }, async () => {
+  const events = [];
+  const out = join(dir, 'auswahl');
+  const options = { ...DEFAULT_OPTIONS, embedThumbnail: false };
+  const probe = await engine().probe(`${base}/feed.xml`, ctx());
+  assert.equal(probe.ok, true, JSON.stringify(probe));
+  assert.deepEqual(probe.metadata.entries.map((e) => [e.index, e.title]), [[1, 'Teil 1'], [2, 'Teil 2'], [3, 'Teil 3'], [4, 'Teil 4']]);
+  const r = await engine().download({ url: `${base}/feed.xml`, isPlaylist: true, playlistItems: [1, 4], outputDir: out, options }, ctx(undefined, events));
+  assert.equal(r.ok, true, JSON.stringify(r));
+  assert.deepEqual(r.files.map((f) => basename(f)), ['001 - Teil 1 [t1].mp4', '004 - Teil 4 [t4].mp4']);
+  // Fortschritt zählt nur die Auswahl: Teil 1 von 2, Teil 2 von 2.
+  assert.deepEqual(events.filter((e) => e.playlistCount).map((e) => [e.playlistIndex, e.playlistCount]), [[1, 2], [2, 2]]);
+});
+
+test('A: Ein kaputter Titel bricht die Playlist nicht ab, meldet aber den Fehler', { skip }, async () => {
+  const events = [];
+  const out = join(dir, 'teilweise');
+  const r = await engine().download({ url: `${base}/feed.xml`, isPlaylist: true, playlistItems: null, outputDir: out, options: { ...DEFAULT_OPTIONS, embedThumbnail: false } }, ctx(undefined, events));
+  assert.equal(r.ok, false);
+  assert.equal(r.errorCode, 'deleted');
+  assert.deepEqual(events.filter((e) => e.type === 'file').map((e) => basename(e.path)), ['001 - Teil 1 [t1].mp4', '003 - Teil 3 [t3].mp4', '004 - Teil 4 [t4].mp4']);
 });

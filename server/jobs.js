@@ -13,6 +13,7 @@ import { runJob } from '../src/core/orchestrator.js';
  *   onHistory: (history: import('../src/core/model.js').Job[]) => void,
  *   history: import('../src/core/model.js').Job[],
  *   concurrency?: number,
+ *   onBusy?: (busy: boolean) => void,  läuft mindestens ein Job?
  * }} deps
  */
 export function createJobManager(deps) {
@@ -40,7 +41,7 @@ export function createJobManager(deps) {
       const id = queue.shift();
       const job = jobs.get(id);
       if (!job || job.state !== 'queued') continue;
-      running++;
+      if (running++ === 0) deps.onBusy?.(true);
       const ac = new AbortController();
       controllers.set(id, ac);
       (async () => {
@@ -64,7 +65,7 @@ export function createJobManager(deps) {
           set(failed);
         } finally {
           controllers.delete(id);
-          running--;
+          if (--running === 0) deps.onBusy?.(false);
           pump();
         }
       })();
@@ -72,9 +73,9 @@ export function createJobManager(deps) {
   };
 
   return {
-    /** @param {string} url @param {import('../src/core/model.js').DownloadRequestOptions} options */
-    add(url, options) {
-      const job = emptyJob(deps.newId(), url, options, deps.now());
+    /** @param {string} url @param {import('../src/core/model.js').DownloadRequestOptions} options @param {number[]|null} [playlistItems] */
+    add(url, options, playlistItems = null) {
+      const job = emptyJob(deps.newId(), url, options, deps.now(), playlistItems);
       set(job);
       queue.push(job.id);
       pump();

@@ -6,7 +6,9 @@ import { DEFAULT_OPTIONS, DEFAULT_SETTINGS, emptyJob } from '../src/core/model.j
 /** Attrappe einer Engine: liefert vorgegebene Ergebnisse. */
 function fakeEngine(id, { probe, download, caps = {} }) {
   const calls = [];
+  const requests = [];
   return {
+    requests,
     id,
     calls,
     capabilities: () => ({ metadata: true, download: true, audioOnly: true, playlist: true, needsUserAction: false, ...caps }),
@@ -14,6 +16,7 @@ function fakeEngine(id, { probe, download, caps = {} }) {
     probe: async (url) => { calls.push(['probe', url]); return probe; },
     download: async (req, ctx) => {
       calls.push(['download', req.url]);
+      requests.push(req);
       ctx.onEvent({ type: 'progress', percent: 50, downloadedBytes: 1, totalBytes: 2, speedBps: 1, etaSec: 1 });
       return typeof download === 'function' ? download(ctx) : download;
     },
@@ -99,4 +102,16 @@ test('runJob: Bot-Check bei A, C liefert nur Hinweis → Fehler bleibt bot_check
   assert.equal(end.state, 'failed');
   assert.equal(end.errorCode, 'bot_check');
   assert.deepEqual(end.attempts.map((x) => [x.strategy, x.errorCode]), [['ytdlp', 'bot_check'], ['official', 'needs_user_action']]);
+});
+
+test('runJob: Titelauswahl geht nur bei Playlists an die Engine', async () => {
+  const a = fakeEngine('ytdlp', { download: { ok: true, files: [] } });
+  const list = emptyJob('j1', 'https://www.youtube.com/playlist?list=PLabc123', DEFAULT_OPTIONS, '2026-10-13T11:00:00Z', [2, 4]);
+  await runJob(list, '/o', deps({ ytdlp: a }));
+  assert.deepEqual(a.requests[0].playlistItems, [2, 4]);
+  assert.equal(a.requests[0].isPlaylist, true);
+  // Video aus einer Playlist, aber „Ganze Playlist“ aus: Auswahl spielt keine Rolle.
+  const single = emptyJob('j2', 'https://www.youtube.com/watch?v=abcdefghijk&list=PLabc123', { ...DEFAULT_OPTIONS, wholePlaylist: false }, '2026-10-13T11:00:00Z', [2]);
+  await runJob(single, '/o', deps({ ytdlp: a }));
+  assert.equal(a.requests[1].playlistItems, null);
 });

@@ -15,7 +15,7 @@ export const api = {
   saveSettings: (patch) => json('PUT', '/api/settings', patch),
   saveSecrets: (secrets) => json('PUT', '/api/secrets', secrets),
   probe: (url, wholePlaylist) => json('POST', '/api/probe', { url, wholePlaylist }),
-  addJob: (url, options) => json('POST', '/api/jobs', { url, options }),
+  addJob: (url, options, playlistItems = null) => json('POST', '/api/jobs', { url, options, playlistItems }),
   cancel: (id) => json('POST', `/api/jobs/${encodeURIComponent(id)}/cancel`),
   retry: (id) => json('POST', `/api/jobs/${encodeURIComponent(id)}/retry`),
   clearHistory: () => json('DELETE', '/api/history'),

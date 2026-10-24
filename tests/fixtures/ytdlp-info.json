@@ -44,8 +44,8 @@
       "expected": {
         "id": "PLabc123", "url": "https://www.youtube.com/playlist?list=PLabc123", "title": "Meine Liste", "uploader": "Anna", "durationSec": null, "thumbnailUrl": null, "uploadDate": null, "license": null, "liveStatus": "none", "ageLimit": 0, "kind": "playlist",
         "entries": [
-          { "id": "abcdefghijk", "url": "https://www.youtube.com/watch?v=abcdefghijk", "title": "Teil 1", "durationSec": 60 },
-          { "id": "bcdefghijkl", "url": "https://www.youtube.com/watch?v=bcdefghijkl", "title": "Teil 2", "durationSec": null }
+          { "index": 1, "id": "abcdefghijk", "url": "https://www.youtube.com/watch?v=abcdefghijk", "title": "Teil 1", "durationSec": 60 },
+          { "index": 3, "id": "bcdefghijkl", "url": "https://www.youtube.com/watch?v=bcdefghijkl", "title": "Teil 2", "durationSec": null }
         ],
         "formats": []
       }

@@ -11,9 +11,10 @@ const engine = (impl) => ({
   download: impl,
 });
 
-const manager = (download, saved = []) => {
+const manager = (download, saved = [], extra = {}) => {
   let n = 0;
   return createJobManager({
+    ...extra,
     newId: () => `job${++n}`,
     now: () => '2026-10-13T12:00:00Z',
     history: [],
@@ -63,4 +64,16 @@ test('Jobs: laufenden und wartenden Auftrag abbrechen', async () => {
   assert.equal(m.cancel(a.id), true);
   assert.equal((await p).state, 'cancelled');
   assert.equal(m.cancel(a.id), false);
+});
+
+test('Jobs: Titelauswahl wird gespeichert, onBusy meldet Beginn und Ende', async () => {
+  const busy = [];
+  let seen = null;
+  const m = manager(async (req) => { seen = req.playlistItems; return { ok: true, files: [] }; }, [], { onBusy: (b) => busy.push(b) });
+  const job = m.add('https://www.youtube.com/playlist?list=PLabc123', DEFAULT_OPTIONS, [1, 3]);
+  assert.deepEqual(job.playlistItems, [1, 3]);
+  await until(m, job.id, ['done']);
+  await new Promise((ok) => setImmediate(ok));
+  assert.deepEqual(seen, [1, 3]);
+  assert.deepEqual(busy, [true, false]);
 });

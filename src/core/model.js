@@ -92,6 +92,7 @@ export const FINAL_ERROR_CODES = ['invalid_url', 'deleted', 'drm', 'paid_content
  * @property {DownloadRequestOptions} options
  * @property {string} outputDir
  * @property {boolean} isPlaylist  vom Kern entschieden (logic.targetUrl), nicht von der Engine
+ * @property {number[]|null} playlistItems  ausgewählte Positionen (1-basiert); null = alle
  */
 
 /**
@@ -128,6 +129,7 @@ export const FINAL_ERROR_CODES = ['invalid_url', 'deleted', 'drm', 'paid_content
 
 /**
  * @typedef {Object} PlaylistEntry
+ * @property {number} index  Position in der Playlist, 1-basiert
  * @property {string} id
  * @property {string} url
  * @property {string} title
@@ -150,6 +152,7 @@ export const FINAL_ERROR_CODES = ['invalid_url', 'deleted', 'drm', 'paid_content
  * @property {number|null} etaSec
  * @property {number|null} playlistIndex  1-basiert
  * @property {number|null} playlistCount
+ * @property {number[]|null} playlistItems  ausgewählte Titel (Positionen, 1-basiert); null = ganze Playlist
  * @property {string|null} title
  * @property {string[]} files
  * @property {string|null} errorCode
@@ -232,14 +235,27 @@ export function sanitizeSettings(raw) {
 }
 
 /**
+ * Auswahl aus einer Playlist: eindeutige, aufsteigende Positionen ab 1.
+ * Kein Array = keine Auswahl (null, also alle); ein leeres Array bleibt leer.
+ * @param {unknown} raw
+ * @returns {number[]|null}
+ */
+export function sanitizePlaylistItems(raw) {
+  if (!Array.isArray(raw)) return null;
+  const items = raw.filter((i) => Number.isInteger(i) && i >= 1);
+  return [...new Set(items)].sort((a, b) => a - b);
+}
+
+/**
  * Leerer Job. id und Zeitstempel kommen von außen.
  * @param {string} id
  * @param {string} url
  * @param {DownloadRequestOptions} options
  * @param {string} createdAt
+ * @param {number[]|null} [playlistItems]
  * @returns {Job}
  */
-export function emptyJob(id, url, options, createdAt) {
+export function emptyJob(id, url, options, createdAt, playlistItems = null) {
   return {
     id,
     url,
@@ -255,6 +271,7 @@ export function emptyJob(id, url, options, createdAt) {
     etaSec: null,
     playlistIndex: null,
     playlistCount: null,
+    playlistItems: sanitizePlaylistItems(playlistItems),
     title: null,
     files: [],
     errorCode: null,
@@ -274,7 +291,7 @@ export function sanitizeJob(raw) {
   if (!raw || typeof raw !== 'object') return null;
   const j = /** @type {any} */ (raw);
   if (typeof j.id !== 'string' || typeof j.url !== 'string' || typeof j.createdAt !== 'string') return null;
-  const base = emptyJob(j.id, j.url, j.options, j.createdAt);
+  const base = emptyJob(j.id, j.url, j.options, j.createdAt, j.playlistItems);
   return {
     ...base,
     state: pick(j.state, JOB_STATES, 'failed'),

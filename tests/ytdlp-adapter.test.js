@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildDownloadArgs, buildProbeArgs, formatArgs } from '../src/adapters/ytdlp/args.js';
+import { buildDownloadArgs, buildProbeArgs, formatArgs, playlistItemsArg } from '../src/adapters/ytdlp/args.js';
 import { classifyError, mapInfoJson, parseLine } from '../src/adapters/ytdlp/parse.js';
 import { createYtDlpEngine } from '../src/adapters/ytdlp/engine.js';
 import { checkEngine } from '../src/core/engine.js';
@@ -59,6 +59,17 @@ test('Argumente: Playlist-Ordner, kein Cover bei webm', () => {
 });
 
 const fakeRunner = (result) => ({ calls: [], async run(cmd, args, opts) { this.calls.push({ cmd, args }); for (const l of result.lines ?? []) opts?.onLine?.('stdout', l); return { stdout: '', stderr: '', error: null, exitCode: 0, ...result }; } });
+
+test('Argumente: Titelauswahl nur bei Playlists, als Bereiche zusammengefasst', () => {
+  assert.equal(playlistItemsArg([1, 2, 3, 5, 7, 8]), '1-3,5,7-8');
+  assert.equal(playlistItemsArg([4]), '4');
+  const req = { url: 'https://www.youtube.com/playlist?list=PLabc123', options: DEFAULT_OPTIONS, outputDir: '/o', isPlaylist: true, playlistItems: [2, 3, 9] };
+  const args = buildDownloadArgs(req, { cookieBrowser: null, isPlaylist: true });
+  assert.equal(args[args.indexOf('--playlist-items') + 1], '2-3,9');
+  assert.ok(args.indexOf('--playlist-items') < args.indexOf('--'));
+  assert.ok(!buildDownloadArgs({ ...req, playlistItems: null }, { cookieBrowser: null, isPlaylist: true }).includes('--playlist-items'));
+  assert.ok(!buildDownloadArgs({ ...req, isPlaylist: false }, { cookieBrowser: null, isPlaylist: false }).includes('--playlist-items'));
+});
 
 test('Engine A erfüllt den Vertrag', () => {
   assert.deepEqual(checkEngine(createYtDlpEngine({ id: 'ytdlp', runner: fakeRunner({}) }), STRATEGY_IDS), []);

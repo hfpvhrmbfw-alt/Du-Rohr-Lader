@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   AUDIO_BITRATES, DEFAULT_OPTIONS, DEFAULT_SETTINGS, ERROR_CODES, FINAL_ERROR_CODES, SCHEMA_VERSION, STRATEGY_IDS,
-  buildExport, emptyJob, parseImport, sanitizeOptions, sanitizeSettings, upgradeRaw,
+  buildExport, emptyJob, parseImport, sanitizeJob, sanitizeOptions, sanitizePlaylistItems, sanitizeSettings, upgradeRaw,
 } from '../src/core/model.js';
 
 test('Stammdaten: IDs eindeutig, Endfehler sind gültige Fehlercodes', () => {
@@ -46,4 +46,15 @@ test('Import: kaputte, fremde und neuere Dateien werden abgelehnt', () => {
 test('upgradeRaw ist idempotent', () => {
   const raw = { app: 'youtube-downloader', version: 1, history: [] };
   assert.deepEqual(upgradeRaw(upgradeRaw(raw)), upgradeRaw(raw));
+});
+
+test('Titelauswahl: Positionen eindeutig, aufsteigend, ab 1; bleibt im Verlauf erhalten', () => {
+  assert.equal(sanitizePlaylistItems(undefined), null);
+  assert.equal(sanitizePlaylistItems('1,2'), null);
+  assert.deepEqual(sanitizePlaylistItems([]), []);
+  assert.deepEqual(sanitizePlaylistItems([5, 2, 2, 0, -1, 1.5, '3', 9]), [2, 5, 9]);
+  const job = emptyJob('j1', 'https://www.youtube.com/playlist?list=PLabc123', DEFAULT_OPTIONS, '2026-10-24T10:00:00Z', [3, 1]);
+  assert.deepEqual(job.playlistItems, [1, 3]);
+  assert.equal(emptyJob('j2', 'u', DEFAULT_OPTIONS, 'x').playlistItems, null);
+  assert.deepEqual(sanitizeJob(JSON.parse(JSON.stringify(job))).playlistItems, [1, 3]);
 });

@@ -76,8 +76,12 @@ export function errorNote(code, detail, attempts = []) {
 
 // ---------- Ansichten ----------
 
-/** @param {import('/core/model.js').Metadata} m */
-export function renderMeta(m, strategy) {
+/**
+ * @param {import('/core/model.js').Metadata} m
+ * @param {string} strategy
+ * @param {Node|null} [picker]  Titelauswahl bei Playlists (renderPicker)
+ */
+export function renderMeta(m, strategy, picker = null) {
   const tags = [];
   if (m.kind === 'playlist') tags.push(h('span', { class: 'tag inv' }, `Playlist · ${m.entries.length}`));
   if (T.LIVE[m.liveStatus]) tags.push(h('span', { class: 'tag' }, T.LIVE[m.liveStatus]));
@@ -87,9 +91,6 @@ export function renderMeta(m, strategy) {
   const facts = [m.uploader, formatDuration(m.durationSec), formatDay(m.uploadDate)].filter(Boolean).join(' · ');
   const figure = m.thumbnailUrl
     ? h('figure', {}, h('img', { class: 'media', src: m.thumbnailUrl, alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' }), h('figcaption', {}, h('b', {}, 'ABB. 01'), 'Vorschaubild'))
-    : null;
-  const entries = m.kind === 'playlist'
-    ? h('div', { class: 'entries' }, m.entries.map((e, i) => h('div', { class: 'row' }, h('span', {}, `${String(i + 1).padStart(2, '0')} · ${e.title || e.id} `, e.durationSec ? h('span', { class: 'muted' }, formatDuration(e.durationSec)) : null))))
     : null;
   const warn = m.liveStatus === 'is_live' || m.liveStatus === 'is_upcoming' ? note('warn', 'Achtung', T.ERROR.live_not_finished[1]) : null;
   return h('div', { class: 'card' },
@@ -103,7 +104,28 @@ export function renderMeta(m, strategy) {
       ),
     ),
     warn,
-    entries,
+    picker,
+  );
+}
+
+/**
+ * Titel einer Playlist mit Häkchen. Zustand hält main.js; hier nur Elemente und Rückmeldungen.
+ * @param {import('/core/model.js').PlaylistEntry[]} entries
+ * @param {Set<number>} selected  ausgewählte Positionen
+ * @param {{pick: (index: number, on: boolean) => void, all: (on: boolean) => void}} on
+ */
+export function renderPicker(entries, selected, on) {
+  return h('div', { id: 'picker', class: 'picker' },
+    h('div', { class: 'actions' },
+      h('span', { id: 'pick-count', class: 'small muted' }, T.PICK.count(selected.size, entries.length)),
+      h('button', { class: 'btn', type: 'button', onclick: () => on.all(true) }, T.PICK.all),
+      h('button', { class: 'btn', type: 'button', onclick: () => on.all(false) }, T.PICK.none),
+    ),
+    h('div', { class: 'entries' }, entries.map((e) =>
+      h('label', { class: 'check' },
+        h('input', { type: 'checkbox', 'data-index': e.index, checked: selected.has(e.index), onchange: (ev) => on.pick(e.index, ev.target.checked) }),
+        h('span', {}, `${String(e.index).padStart(2, '0')} · ${e.title || e.id} `, e.durationSec ? h('span', { class: 'muted' }, formatDuration(e.durationSec)) : null),
+      ))),
   );
 }
 
@@ -153,6 +175,7 @@ export function renderJob(job, on) {
     bar,
     facts ? h('p', { class: 'small muted' }, facts) : null,
     job.strategy === 'browser-capture' && active ? note('info', 'Hinweis', T.CAPTURE_NOTE) : null,
+    job.state === 'failed' && job.files.length > 0 && job.playlistCount ? note('warn', 'Teilweise', T.PICK.partial(job.files.length, job.playlistCount)) : null,
     job.state === 'failed' ? errorNote(job.errorCode ?? 'unknown', job.errorDetail, job.attempts) : null,
     job.files.length ? h('p', { class: 'small break' }, job.files.join('\n')) : null,
     buttons.length ? h('div', { class: 'actions' }, buttons) : null,

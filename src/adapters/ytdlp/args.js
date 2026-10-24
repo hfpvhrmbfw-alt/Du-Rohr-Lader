@@ -42,6 +42,21 @@ export function formatArgs(o) {
 }
 
 /**
+ * Positionen → Angabe für --playlist-items, aufeinanderfolgende als Bereich: [1,2,3,5] → "1-3,5".
+ * @param {number[]} items  aufsteigend, eindeutig
+ * @returns {string}
+ */
+export function playlistItemsArg(items) {
+  const parts = [];
+  for (let i = 0; i < items.length; i++) {
+    const start = items[i];
+    while (i + 1 < items.length && items[i + 1] === items[i] + 1) i++;
+    parts.push(start === items[i] ? String(start) : `${start}-${items[i]}`);
+  }
+  return parts.join(',');
+}
+
+/**
  * @param {import('../../core/model.js').DownloadRequest} request
  * @param {{cookieBrowser: string|null, isPlaylist: boolean}} opts
  * @returns {string[]}
@@ -57,9 +72,11 @@ export function buildDownloadArgs(request, opts) {
     '--progress',
     '--progress-template', `download:${MARK.progress}%(progress)j`,
     '--print', `before_dl:${MARK.title}%(title)s`,
-    '--print', `before_dl:${MARK.item}%(playlist_index|0)s/%(n_entries|0)s`,
+    // Mit Auswahl zählen beide Werte nur die ausgewählten Titel.
+    '--print', `before_dl:${MARK.item}%(playlist_autonumber|0)s/%(n_entries|0)s`,
     '--print', `after_move:${MARK.file}%(filepath)j`,
     opts.isPlaylist ? '--yes-playlist' : '--no-playlist',
+    ...(opts.isPlaylist && request.playlistItems ? ['--playlist-items', playlistItemsArg(request.playlistItems)] : []),
     '-P', request.outputDir,
     '-o', name,
     ...formatArgs(o),

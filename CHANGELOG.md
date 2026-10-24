@@ -10,6 +10,15 @@ Alle Neuerungen landen in einer neuen Version. Versionen heißen `DU-Rohr-Lader-
 Tag und Release legt `.github/workflows/release.yml` beim Merge nach `main` automatisch an,
 sobald `package.json` eine Version trägt, die es noch nicht als Tag gibt.
 
+## DU-Rohr-Lader-1.1.0 – 2026-10-24
+
+### Neu
+- Titelauswahl bei Playlists: Nach dem Prüfen stehen alle Titel mit Häkchen in der Liste (anfangs alle ausgewählt, dazu „Alle“ und „Keine“). Geladen werden nur die ausgewählten Titel; der Fortschritt zählt „Teil x von y“ nur über die Auswahl.
+
+### Behoben
+- Playlist nur teilweise geladen: Scheitert ein einzelner Titel (z. B. gelöscht oder privat), lädt yt-dlp die übrigen weiter, der Auftrag stand danach aber nur als „Fehler“ da. Jetzt steht dabei „x von y Titeln geladen“, und „Wiederholen“ lädt nur die fehlenden nach.
+- macOS: Solange ein Auftrag läuft, schläft der Mac nicht mehr von selbst ein (`caffeinate`). Vorher konnte der Ruhezustand mitten in einer Playlist die Verbindung kappen. Zugeklappt schläft er weiterhin.
+
 ## DU-Rohr-Lader-1.0.1 – 2026-10-21
 
 ### Neu
