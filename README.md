@@ -48,7 +48,7 @@ Umgebungsvariablen: `PORT`, `YTD_LAN`, `YTD_PAIR_RESET`, `YTD_DATA_DIR`, `YTDLP_
 
 - URL prüfen → Metadaten (Titel, Kanal, Dauer, Lizenz, Live-/Altersstatus, Playlist-Einträge) → Format wählen → laden.
 - Video: Höchstauflösung, Container (MP4/WebM/MKV). Nur Audio: Original (m4a/opus) oder MP3/M4A/FLAC/Opus, Bitrate, Titel und Cover als Tags.
-- Playlists, Fortschritt (SSE), Abbrechen, Wiederholen, Verlauf mit Export/Import (JSON), yt-dlp-Update-Check.
+- Playlists mit Titelauswahl (Häkchen, „Alle“/„Keine“), Fortschritt (SSE), Abbrechen, Wiederholen, Verlauf mit Export/Import (JSON), yt-dlp-Update-Check.
 - Klare Fehlermeldungen mit Anleitung: privat, gelöscht, Altersfreigabe, Region, Rate-Limit, Bot-Check, Mitglieder, DRM, Livestream läuft noch.
 - Strategien als austauschbare Engines mit automatischer Fallback-Kette (vorläufig A → B → D → C):
   - **A** yt-dlp ohne Login · **B** yt-dlp mit Cookies aus deinem angemeldeten Browser (nur wenn gewählt und nur nach passenden Fehlern)

@@ -90,3 +90,11 @@ export const DEVICE = {
   remote: 'Du steuerst den Mac von diesem Gerät aus. Downloads landen auf dem Mac; fertige Dateien kannst du hier mit „Auf dieses Gerät laden“ in die App „Dateien“ holen.',
   notPaired: 'Dieses Gerät ist nicht (mehr) gekoppelt. Auf dem Mac unter Einstellungen → iPhone und iPad den QR-Code neu scannen.',
 };
+
+export const PICK = {
+  all: 'Alle',
+  none: 'Keine',
+  count: (n, total) => `${n} von ${total} Titeln ausgewählt`,
+  nothing: 'Bitte mindestens einen Titel auswählen.',
+  partial: (n, total) => `${n} von ${total} Titeln geladen. „Wiederholen“ lädt nur die fehlenden nach, schon geladene werden übersprungen.`,
+};

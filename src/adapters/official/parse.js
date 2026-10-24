@@ -65,8 +65,9 @@ export function mapPlaylist(playlist, items) {
     ageLimit: 0,
     kind: 'playlist',
     entries: items
-      .filter((it) => it?.contentDetails?.videoId)
-      .map((it) => ({ id: it.contentDetails.videoId, url: `https://www.youtube.com/watch?v=${it.contentDetails.videoId}`, title: it.snippet?.title ?? '', durationSec: null })),
+      .map((it, i) => ({ it, index: Number.isInteger(it?.snippet?.position) ? it.snippet.position + 1 : i + 1 }))
+      .filter(({ it }) => it?.contentDetails?.videoId)
+      .map(({ it, index }) => ({ index, id: it.contentDetails.videoId, url: `https://www.youtube.com/watch?v=${it.contentDetails.videoId}`, title: it.snippet?.title ?? '', durationSec: null })),
     formats: [],
   };
 }

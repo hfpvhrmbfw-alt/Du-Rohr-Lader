@@ -20,7 +20,7 @@ import { createOfficialEngine } from '../src/adapters/official/engine.js';
 import { createYtDlpEngine } from '../src/adapters/ytdlp/engine.js';
 import { fetchLatestYtDlp } from '../src/adapters/ytdlp/update.js';
 import { isNewerVersion } from '../src/core/logic.js';
-import { buildExport, parseImport, sanitizeOptions, sanitizeSettings } from '../src/core/model.js';
+import { buildExport, parseImport, sanitizeOptions, sanitizePlaylistItems, sanitizeSettings } from '../src/core/model.js';
 import { probeWithFallback } from '../src/core/orchestrator.js';
 import { createAccessPolicy, isLoopback } from './access.js';
 import { createJobManager } from './jobs.js';
@@ -82,7 +82,23 @@ const refresh = () => {
   availability = null;
 };
 
+// macOS: Solange ein Auftrag läuft, darf der Mac nicht von selbst einschlafen. Sonst bricht die Verbindung
+// zu YouTube mitten in einer Playlist ab und die restlichen Titel scheitern. Zugeklappt schläft er trotzdem.
+/** @type {AbortController|null} */
+let awake = null;
+const keepAwake = (busy) => {
+  if (platform() !== 'darwin') return;
+  if (busy && !awake) {
+    awake = new AbortController();
+    runner.run('caffeinate', ['-i', '-w', String(process.pid)], { signal: awake.signal });
+  } else if (!busy && awake) {
+    awake.abort();
+    awake = null;
+  }
+};
+
 const jobs = createJobManager({
+  onBusy: keepAwake,
   newId: randomUUID,
   now,
   history: loaded.history,
@@ -201,7 +217,9 @@ const routes = {
     const body = await readBody(req);
     if (!settings.legalNoticeAccepted) return send(res, 403, { error: 'legal_notice_not_accepted' });
     if (typeof body?.url !== 'string') return send(res, 400, { error: 'bad_request' });
-    send(res, 201, jobs.add(body.url, sanitizeOptions(body.options)));
+    const items = sanitizePlaylistItems(body.playlistItems);
+    if (items && items.length === 0) return send(res, 400, { error: 'nothing_selected' });
+    send(res, 201, jobs.add(body.url, sanitizeOptions(body.options), items));
   },
 
   'GET /api/history': async (req, res) => send(res, 200, jobs.history()),

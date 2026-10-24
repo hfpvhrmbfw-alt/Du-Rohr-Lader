@@ -54,7 +54,9 @@ export function mapInfoJson(j) {
     ageLimit: num(j.age_limit) ?? 0,
     kind: isList ? 'playlist' : 'video',
     entries: isList && Array.isArray(j.entries)
-      ? j.entries.filter((e) => e).map((e) => ({ id: String(e.id ?? ''), url: str(e.url) ?? str(e.webpage_url) ?? '', title: str(e.title) ?? '', durationSec: num(e.duration) }))
+      ? j.entries
+          .map((e, i) => e && { index: i + 1, id: String(e.id ?? ''), url: str(e.url) ?? str(e.webpage_url) ?? '', title: str(e.title) ?? '', durationSec: num(e.duration) })
+          .filter((e) => e)
       : [],
     formats: isList ? [] : (Array.isArray(j.formats) ? j.formats : typeof j.url === 'string' ? [j] : []).map(mapFormat).filter((f) => f !== null),
   };

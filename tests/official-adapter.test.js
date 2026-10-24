@@ -60,6 +60,7 @@ test('Engine C: Playlist über mehrere Seiten', async () => {
   assert.ok(r.ok);
   assert.equal(r.metadata.kind, 'playlist');
   assert.deepEqual(r.metadata.entries.map((e) => e.title), ['V1', 'V2']);
+  assert.deepEqual(r.metadata.entries.map((e) => e.index), [1, 2]);
 });
 
 test('Engine C: nicht gefunden, Kontingent erschöpft, Netz weg, kein Download', async () => {

@@ -107,7 +107,7 @@ export async function runJob(startJob, outputDir, deps) {
     }
     update({ type: 'started', strategy: id });
     const result = await deps.engines[id].download(
-      { url, options: job.options, outputDir, isPlaylist },
+      { url, options: job.options, outputDir, isPlaylist, playlistItems: isPlaylist ? job.playlistItems : null },
       {
         signal: deps.signal,
         onEvent: (ev) => {
