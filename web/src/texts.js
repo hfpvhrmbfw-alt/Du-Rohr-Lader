@@ -20,8 +20,8 @@ export const STATE = {
 
 export const MODE = { video: 'Video', audio: 'Nur Audio' };
 export const HEIGHT = (h) => (h === null ? 'Beste verfügbare' : `bis ${h}p`);
-export const BITRATE = (b) => (b === null ? 'Beste / variabel' : `${b} kbit/s`);
-export const AUDIO_FORMAT = { original: 'Original (m4a/opus, ohne Umwandlung)', mp3: 'MP3', m4a: 'M4A (AAC)', flac: 'FLAC (verlustfrei)', opus: 'Opus' };
+export const BITRATE = (b) => (b === null ? 'Beste' : `${b} kbit/s`);
+export const AUDIO_FORMAT = { original: 'Original (ohne Umwandlung)', mp3: 'MP3', m4a: 'M4A (AAC)', flac: 'FLAC (verlustfrei)', opus: 'Opus' };
 export const CONTAINER = { mp4: 'MP4', webm: 'WebM', mkv: 'MKV' };
 export const BROWSER = { chrome: 'Chrome', firefox: 'Firefox', safari: 'Safari', edge: 'Edge', brave: 'Brave', chromium: 'Chromium' };
 export const LIVE = { none: null, is_live: 'Live', was_live: 'Livestream-Aufzeichnung', is_upcoming: 'Geplant', post_live: 'Live gerade beendet' };
@@ -98,3 +98,40 @@ export const PICK = {
   nothing: 'Bitte mindestens einen Titel auswählen.',
   partial: (n, total) => `${n} von ${total} Titeln geladen. „Wiederholen“ lädt nur die fehlenden nach, schon geladene werden übersprungen.`,
 };
+
+/** Programme, die fehlen: genau diese nennen und den passenden Befehl zeigen. */
+export const MISSING = {
+  text: (names) => `${names.join(' und ')} ${names.length > 1 ? 'sind' : 'ist'} nicht installiert. Auf dem Mac installieren mit:`,
+  command: (names) => `brew install ${names.join(' ')}`,
+  copy: 'Befehl kopieren',
+  copied: 'Kopiert',
+};
+
+/** Meldungen und Beschriftungen aus main.js. */
+export const MSG = {
+  channel: 'Ganze Kanäle lädt die App nicht. Bitte ein Video oder eine Playlist einfügen.',
+  probing: 'Metadaten werden geladen …',
+  noServer: 'Der lokale Server antwortet nicht.',
+  serverDown: 'Der lokale Server läuft nicht. Im Projektordner „npm start“ ausführen.',
+  connectionLost: 'Verbindung zum lokalen Server unterbrochen. Neuer Versuch läuft …',
+  jobFailed: 'Auftrag konnte nicht angelegt werden.',
+  started: 'Läuft, siehe Aufträge. Du kannst gleich den nächsten Link einfügen.',
+  imported: (n) => `${n} Einträge übernommen.`,
+  saved: 'Gespeichert.',
+  copyPrompt: 'Link zum Kopieren:',
+  browserOff: 'Aus',
+  apiKeySet: 'gesetzt (zum Ändern neu eingeben)',
+  apiKeyUnset: 'nicht gesetzt',
+  ytdlpMissing: 'yt-dlp fehlt',
+  updateChecking: 'Prüfe …',
+  updateUnreachable: 'Die neueste Version konnte nicht abgefragt werden (GitHub nicht erreichbar).',
+  updateAvailable: (latest, installed) => `yt-dlp ${latest} ist verfügbar (installiert: ${installed}). Aktualisieren mit `,
+  upToDate: (v) => `yt-dlp ${v} ist die neueste Version.`,
+};
+
+/** Hell/Dunkel-Schalter: Reihenfolge beim Klicken. null = wie das System. */
+export const THEME = [
+  [null, 'Auto'],
+  ['light', 'Hell'],
+  ['dark', 'Dunkel'],
+];

@@ -42,7 +42,8 @@ body.dropping #laden { outline:2px dashed var(--accent); outline-offset:4px; }
     background:var(--surface); border-top:1px solid var(--line);
     padding:0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
-  .runhead nav a { flex:1 1 0; min-width:0; display:flex; align-items:center; justify-content:center; min-height:52px; font-size:10px; letter-spacing:.04em; text-underline-offset:4px; }
+  /* Normale Schrift statt Monospace-Versalien: sonst passt „Einstellungen“ bei 390 px nur mit 10 px. */
+  .runhead nav a { flex:1 1 0; min-width:0; display:flex; align-items:center; justify-content:center; min-height:52px; font:600 12px var(--sans); letter-spacing:0; text-transform:none; text-underline-offset:4px; }
   body { padding-bottom:calc(52px + env(safe-area-inset-bottom)); }
   .section { scroll-margin-top:calc(56px + env(safe-area-inset-top)); }
   .mode-switch { width:100%; }
@@ -60,9 +61,7 @@ body.dropping #laden { outline:2px dashed var(--accent); outline-offset:4px; }
   #verlauf table.data td:nth-child(1) { grid-area:1 / 1; color:var(--muted); }
   #verlauf table.data td:nth-child(3) { grid-area:1 / 2; justify-self:end; }
   #verlauf table.data td:nth-child(2) { grid-area:2 / 1 / 3 / 3; }
-  #verlauf table.data td:nth-child(4) { grid-area:3 / 1; color:var(--muted); }
-  #verlauf table.data td:nth-child(5) { grid-area:3 / 2; justify-self:end; }
-  #verlauf table.data td.empty { grid-column:1 / -1; }
+  #verlauf table.data td:nth-child(4) { grid-area:3 / 2; justify-self:end; }
 }
 
 /* ---------- Touch: Ziele mindestens 44 pt (Apple HIG) ---------- */

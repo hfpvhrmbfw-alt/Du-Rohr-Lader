@@ -26,7 +26,7 @@
   <nav aria-label="Abschnitte">
     <a href="#laden" aria-current="page">Laden</a><a href="#auftraege">Aufträge</a><a href="#verlauf">Verlauf</a><a href="#einstellungen">Einstellungen</a>
   </nav>
-  <span id="tool-state">…</span>
+  <span class="runhead-end"><span id="tool-state">…</span><button class="theme-btn cap" id="theme-btn" type="button" aria-label="Hell oder dunkel">Auto</button></span>
 </div></header>
 
 <main class="wrap">
@@ -42,9 +42,10 @@
     <h2 class="label"><span class="no">№ 01</span> — Laden</h2>
     <form id="url-form" class="url-form" novalidate>
       <label class="field"><span class="cap">Video- oder Playlist-URL</span>
-        <input id="url" type="url" inputmode="url" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="https://www.youtube.com/watch?v=…" required></label>
+        <input id="url" class="url-input" type="url" inputmode="url" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="https://www.youtube.com/watch?v=…" required></label>
       <button class="btn" id="probe-btn" type="submit">Prüfen</button>
     </form>
+    <p class="small muted quick-hint">Tipp: Link irgendwo mit ⌘V einfügen oder ins Fenster ziehen, dann wird er sofort geprüft. <kbd>/</kbd> springt ins Feld.</p>
     <div id="probe-note"></div>
     <div id="meta" hidden></div>
 
@@ -55,9 +56,9 @@
       </div>
       <div class="form-grid">
         <label class="field" data-for="video"><span class="cap">Auflösung</span><select id="opt-height"></select></label>
-        <label class="field" data-for="video"><span class="cap">Container</span><select id="opt-container"></select></label>
+        <label class="field" data-for="video"><span class="cap">Dateiformat</span><select id="opt-container"></select></label>
         <label class="field" data-for="audio"><span class="cap">Audioformat</span><select id="opt-audio-format"></select></label>
-        <label class="field" data-for="audio"><span class="cap">Bitrate</span><select id="opt-bitrate"></select></label>
+        <label class="field" data-for="audio"><span class="cap">Qualität</span><select id="opt-bitrate"></select></label>
       </div>
       <label class="check"><input type="checkbox" id="opt-meta"><span>Titel und Künstler als Tags einbetten</span></label>
       <label class="check"><input type="checkbox" id="opt-thumb"><span>Vorschaubild als Cover einbetten</span></label>
@@ -74,33 +75,46 @@
 
   <section class="section" id="verlauf">
     <h2 class="label"><span class="no">№ 03</span> — Verlauf</h2>
-    <div class="actions">
-      <button class="btn" id="export-btn" type="button">Exportieren</button>
-      <label class="btn" for="import-file">Importieren</label><input id="import-file" type="file" accept="application/json,.json" hidden>
-      <button class="btn" id="clear-btn" type="button">Verlauf leeren</button>
-    </div>
+    <p class="empty" id="history-empty">Noch nichts geladen.</p>
+    <div class="table-scroll" id="history-table" hidden><table class="data"><thead><tr><th>Datum</th><th>Titel</th><th>Status</th><th></th></tr></thead><tbody id="history"></tbody></table></div>
     <div id="history-note"></div>
-    <div class="table-scroll"><table class="data"><thead><tr><th>Datum</th><th>Titel</th><th>Status</th><th>Strategie</th><th></th></tr></thead><tbody id="history"></tbody></table></div>
+    <details class="more">
+      <summary>Sichern und leeren</summary>
+      <div class="actions">
+        <button class="btn" id="export-btn" type="button">Exportieren</button>
+        <label class="btn" for="import-file">Importieren</label><input id="import-file" type="file" accept="application/json,.json" hidden>
+        <button class="btn" id="clear-btn" type="button">Verlauf leeren</button>
+      </div>
+    </details>
   </section>
 
   <section class="section" id="einstellungen">
     <h2 class="label"><span class="no">№ 04</span> — Einstellungen</h2>
     <div class="form-grid">
       <label class="field"><span class="cap">Zielordner</span><input id="set-outdir" type="text" spellcheck="false"></label>
-      <label class="field"><span class="cap">Cookies aus Browser (Strategie B)</span><select id="set-browser"></select></label>
-      <label class="field"><span class="cap">YouTube-Data-API-Schlüssel (Strategie C)</span><input id="set-apikey" type="password" autocomplete="off" placeholder="nicht gesetzt"></label>
     </div>
-    <label class="check"><input type="checkbox" id="set-capture"><span>Aufnahme im Browser als letzten Ausweg erlauben (Strategie D)</span></label>
-    <div class="note info"><span class="cap">Hinweis</span><span id="capture-note"></span></div>
-    <div class="actions"><button class="btn" id="save-settings" type="button">Speichern</button><span id="settings-saved" class="muted small"></span></div>
+    <p id="settings-saved" class="muted small" role="status"></p>
 
     <h3 class="cap">iPhone und iPad</h3>
     <div id="devices"></div>
 
-    <h3 class="cap">Strategien und Programme</h3>
-    <div id="tools"></div>
-    <div class="actions"><button class="btn" id="update-btn" type="button">yt-dlp-Update prüfen</button><button class="btn" id="refresh-btn" type="button">Neu prüfen</button></div>
-    <div id="update-note"></div>
+    <details class="more" id="advanced">
+      <summary>Erweitert</summary>
+      <div>
+        <p class="small muted">Nur nötig, wenn ein Video nicht direkt lädt. Änderungen gelten sofort.</p>
+        <div class="form-grid">
+          <label class="field"><span class="cap">Cookies aus Browser (Strategie B)</span><select id="set-browser"></select></label>
+          <label class="field"><span class="cap">YouTube-Data-API-Schlüssel (Strategie C)</span><input id="set-apikey" type="password" autocomplete="off" placeholder="nicht gesetzt"></label>
+        </div>
+        <label class="check"><input type="checkbox" id="set-capture"><span>Aufnahme im Browser als letzten Ausweg erlauben (Strategie D)</span></label>
+        <div class="note info"><span class="cap">Hinweis</span><span id="capture-note"></span></div>
+
+        <h3 class="cap">Strategien und Programme</h3>
+        <div id="tools"></div>
+        <div class="actions"><button class="btn" id="update-btn" type="button">yt-dlp-Update prüfen</button><button class="btn" id="refresh-btn" type="button">Neu prüfen</button></div>
+        <div id="update-note"></div>
+      </div>
+    </details>
   </section>
 </main>
 
@@ -110,6 +124,12 @@
   <h2 id="legal-title">Bevor es losgeht</h2>
   <div class="note warn"><span class="cap">Wichtig</span><span id="legal-text"></span></div>
   <div class="actions"><button class="btn primary" id="legal-accept" type="button">Verstanden</button></div>
+</dialog>
+
+<dialog id="confirm-clear" aria-labelledby="confirm-clear-title">
+  <h2 id="confirm-clear-title">Verlauf leeren?</h2>
+  <p>Die Liste wird gelöscht. Die heruntergeladenen Dateien bleiben erhalten.</p>
+  <form method="dialog" class="actions"><button class="btn" value="cancel">Abbrechen</button><button class="btn primary" value="ok">Verlauf leeren</button></form>
 </dialog>
 
 <script type="module" src="src/main.js"></script>

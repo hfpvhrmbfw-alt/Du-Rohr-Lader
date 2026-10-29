@@ -102,17 +102,17 @@ async function probe(e) {
   $('#meta').hidden = true;
   $('#options').hidden = true;
   if (!parsed.ok) return setNote($('#probe-note'), note('warn', 'Prüfen', T.URL_ERROR[parsed.error]));
-  if (parsed.kind === 'channel') return setNote($('#probe-note'), note('warn', 'Kanal', 'Ganze Kanäle lädt die App nicht. Bitte ein Video oder eine Playlist einfügen.'));
+  if (parsed.kind === 'channel') return setNote($('#probe-note'), note('warn', 'Kanal', T.MSG.channel));
   state.url = input;
   state.parsed = parsed;
   $('#opt-playlist-row').hidden = parsed.kind !== 'video-in-playlist' && parsed.kind !== 'playlist';
   if (parsed.kind === 'playlist') $('#opt-playlist').checked = true;
   readOptions();
-  setNote($('#probe-note'), note('info', 'Prüfe', 'Metadaten werden geladen …'));
+  setNote($('#probe-note'), note('info', 'Prüfe', T.MSG.probing));
   $('#probe-btn').disabled = true;
   const r = await api.probe(input, state.options.wholePlaylist).catch(() => null);
   $('#probe-btn').disabled = false;
-  if (!r || !r.ok) return setNote($('#probe-note'), note('err', 'Fehler', 'Der lokale Server antwortet nicht.'));
+  if (!r || !r.ok) return setNote($('#probe-note'), note('err', 'Fehler', T.MSG.noServer));
   const res = r.data;
   if (!res.ok) {
     setNote($('#probe-note'), errorNote(res.errorCode, res.detail, res.attempts ?? []));
@@ -137,10 +137,21 @@ async function download() {
   if (items && items.length === 0) return setNote($('#probe-note'), note('warn', 'Auswahl', T.PICK.nothing));
   const r = await api.addJob(state.url, state.options, items);
   if (r.status === 403) return $('#legal').showModal();
-  if (!r.ok) return setNote($('#probe-note'), note('err', 'Fehler', 'Auftrag konnte nicht angelegt werden.'));
+  if (!r.ok) return setNote($('#probe-note'), note('err', 'Fehler', T.MSG.jobFailed));
   upsertJob(r.data);
-  document.getElementById('auftraege').scrollIntoView({ behavior: 'smooth' });
+  api.saveSettings({ defaults: state.options }).catch(() => {}); // letzte Wahl merken
+  // Bereit für den nächsten Link.
+  state.meta = null;
+  $('#url').value = '';
+  $('#meta').hidden = true;
+  $('#options').hidden = true;
+  setNote($('#probe-note'), note('ok', 'Gestartet', T.MSG.started));
+  if (wide.matches) $('#url').focus();
+  else document.getElementById('auftraege').scrollIntoView({ behavior: 'smooth' });
 }
+
+/** Desktop zweispaltig: Aufträge stehen rechts daneben, kein Scrollen nötig. */
+const wide = matchMedia('(min-width:1100px)');
 
 // ---------- Aufträge und Verlauf ----------
 
@@ -168,8 +179,9 @@ function upsertJob(job) {
 }
 
 function renderHistory() {
-  const rows = state.history.map((j) => renderHistoryRow(j, handlers));
-  $('#history').replaceChildren(...(rows.length ? rows : [h('tr', {}, h('td', { colspan: 5, class: 'empty' }, 'Noch nichts geladen.'))]));
+  $('#history').replaceChildren(...state.history.map((j) => renderHistoryRow(j, handlers)));
+  $('#history-table').hidden = state.history.length === 0;
+  $('#history-empty').hidden = state.history.length > 0;
 }
 
 async function exportData() {
@@ -193,13 +205,15 @@ async function importData(e) {
   }
   const r = await api.importData(data);
   if (!r.ok) return setNote($('#history-note'), note('err', 'Import', T.IMPORT_ERROR[r.data?.error] ?? T.IMPORT_ERROR.bad_format));
-  setNote($('#history-note'), note('ok', 'Import', `${r.data.count} Einträge übernommen.`));
+  setNote($('#history-note'), note('ok', 'Import', T.MSG.imported(r.data.count)));
   await loadStatus();
 }
 
-async function clearHistory() {
-  if (!confirm('Verlauf wirklich leeren? Die heruntergeladenen Dateien bleiben erhalten.')) return;
-  await api.clearHistory();
+function clearHistory() {
+  const dialog = $('#confirm-clear');
+  dialog.returnValue = '';
+  dialog.addEventListener('close', () => dialog.returnValue === 'ok' && api.clearHistory(), { once: true });
+  dialog.showModal();
 }
 
 // ---------- Einstellungen ----------
@@ -207,9 +221,9 @@ async function clearHistory() {
 function showSettings(s) {
   $('#set-outdir').value = s.settings.outputDir ?? '';
   $('#set-outdir').placeholder = s.outputDir;
-  fillSelect($('#set-browser'), [null, ...COOKIE_BROWSERS], (v) => (v === null ? 'Aus' : T.BROWSER[v]), s.settings.cookieBrowser);
+  fillSelect($('#set-browser'), [null, ...COOKIE_BROWSERS], (v) => (v === null ? T.MSG.browserOff : T.BROWSER[v]), s.settings.cookieBrowser);
   $('#set-capture').checked = s.settings.allowBrowserCapture;
-  $('#set-apikey').placeholder = s.tools.apiKeySet ? 'gesetzt (zum Ändern neu eingeben)' : 'nicht gesetzt';
+  $('#set-apikey').placeholder = s.tools.apiKeySet ? T.MSG.apiKeySet : T.MSG.apiKeyUnset;
   $('#tools').replaceChildren(renderTools(s));
   const client = s.client ?? { local: true, lan: false, pairUrls: [] };
   if (handlers.local !== client.local) {
@@ -220,9 +234,17 @@ function showSettings(s) {
   }
   $('#devices').replaceChildren(renderDevices(client, copyPairLink));
   const y = s.tools.ytdlp;
-  $('#tool-state').textContent = y.ok ? `yt-dlp ${y.version}` : 'yt-dlp fehlt';
-  if (!y.ok) setNote($('#global-note'), note('err', 'Programm fehlt', T.ERROR.tool_missing[1]));
-  else setNote($('#global-note'), null);
+  $('#tool-state').textContent = y.ok ? `yt-dlp ${y.version}` : T.MSG.ytdlpMissing;
+  setNote($('#global-note'), missingNote(s));
+}
+
+/** Hinweis, welches Programm genau fehlt, mit Befehl zum Kopieren; null, wenn alles da ist. */
+function missingNote(s) {
+  const names = ['ytdlp', 'ffmpeg'].filter((k) => !s.tools[k].ok).map((k) => (k === 'ytdlp' ? 'yt-dlp' : k));
+  if (names.length === 0) return null;
+  const cmd = T.MISSING.command(names);
+  const copy = h('button', { class: 'btn', type: 'button', onclick: () => navigator.clipboard?.writeText(cmd).then(() => (copy.textContent = T.MISSING.copied)).catch(() => {}) }, T.MISSING.copy);
+  return note('err', 'Programm fehlt', `${T.MISSING.text(names)} `, h('code', {}, cmd), ' ', copy);
 }
 
 async function copyPairLink(url) {
@@ -230,41 +252,41 @@ async function copyPairLink(url) {
     await navigator.clipboard.writeText(url);
     $('#settings-saved').textContent = T.DEVICE.copied;
   } catch {
-    prompt('Link zum Kopieren:', url);
+    prompt(T.MSG.copyPrompt, url);
   }
 }
 
-async function saveSettings() {
-  const patch = {
-    outputDir: $('#set-outdir').value.trim() || null,
-    cookieBrowser: $('#set-browser').value || null,
-    allowBrowserCapture: $('#set-capture').checked,
-    defaults: state.options,
-  };
+/** Jede Einstellung wird sofort beim Ändern gespeichert, kein Speichern-Knopf. */
+async function saveSetting(patch) {
   await api.saveSettings(patch);
-  const key = $('#set-apikey').value.trim();
-  if (key) await api.saveSecrets({ youtubeApiKey: key });
-  $('#set-apikey').value = '';
-  $('#settings-saved').textContent = 'Gespeichert.';
+  $('#settings-saved').textContent = T.MSG.saved;
   setTimeout(() => ($('#settings-saved').textContent = ''), 2500);
   await loadStatus(true);
 }
 
+async function saveApiKey() {
+  const key = $('#set-apikey').value.trim();
+  if (!key) return;
+  await api.saveSecrets({ youtubeApiKey: key });
+  $('#set-apikey').value = '';
+  await saveSetting({});
+}
+
 async function updateCheck() {
-  setNote($('#update-note'), note('info', 'Update', 'Prüfe …'));
+  setNote($('#update-note'), note('info', 'Update', T.MSG.updateChecking));
   const r = await api.updateCheck();
   const d = r.data;
-  if (!d?.ok) return setNote($('#update-note'), note('warn', 'Update', 'Die neueste Version konnte nicht abgefragt werden (GitHub nicht erreichbar).'));
+  if (!d?.ok) return setNote($('#update-note'), note('warn', 'Update', T.MSG.updateUnreachable));
   if (d.updateAvailable) {
-    return setNote($('#update-note'), note('warn', 'Update', `yt-dlp ${d.latest} ist verfügbar (installiert: ${d.installed}). Aktualisieren mit `, h('code', {}, 'brew upgrade yt-dlp'), ' oder ', h('code', {}, 'yt-dlp -U'), '.'));
+    return setNote($('#update-note'), note('warn', 'Update', T.MSG.updateAvailable(d.latest, d.installed), h('code', {}, 'brew upgrade yt-dlp'), ' oder ', h('code', {}, 'yt-dlp -U'), '.'));
   }
-  setNote($('#update-note'), note('ok', 'Aktuell', `yt-dlp ${d.installed} ist die neueste Version.`));
+  setNote($('#update-note'), note('ok', 'Aktuell', T.MSG.upToDate(d.installed)));
 }
 
 async function loadStatus(refresh = false) {
   const r = await api.status(refresh).catch(() => null);
   if (r?.status === 401) return setNote($('#global-note'), note('err', 'Kopplung', T.DEVICE.notPaired));
-  if (!r?.ok) return setNote($('#global-note'), note('err', 'Server', 'Der lokale Server läuft nicht. Im Projektordner „npm start“ ausführen.'));
+  if (!r?.ok) return setNote($('#global-note'), note('err', 'Server', T.MSG.serverDown));
   state.status = r.data;
   showSettings(r.data);
   if (!r.data.settings.legalNoticeAccepted) $('#legal').showModal();
@@ -308,8 +330,35 @@ function bindQuickInput() {
 
 // ---------- Start ----------
 
+// ---------- Hell/Dunkel ----------
+
+function readTheme() {
+  try {
+    return localStorage.getItem('theme');
+  } catch {
+    return null;
+  }
+}
+
+function showTheme(theme) {
+  if (theme) document.documentElement.dataset.theme = theme;
+  else delete document.documentElement.dataset.theme;
+  $('#theme-btn').textContent = (T.THEME.find(([t]) => t === theme) ?? T.THEME[0])[1];
+}
+
+function nextTheme() {
+  const i = T.THEME.findIndex(([t]) => t === (readTheme() ?? null));
+  const [theme] = T.THEME[(i + 1) % T.THEME.length];
+  try {
+    if (theme) localStorage.setItem('theme', theme);
+    else localStorage.removeItem('theme');
+  } catch {}
+  showTheme(theme);
+}
+
 async function start() {
-  if (localStorage.getItem('theme')) document.documentElement.dataset.theme = localStorage.getItem('theme');
+  showTheme(readTheme());
+  $('#theme-btn').addEventListener('click', nextTheme);
   $('#legal-text').textContent = T.LEGAL;
   $('#capture-note').textContent = T.CAPTURE_NOTE;
   $('#legal').addEventListener('cancel', (e) => e.preventDefault());
@@ -335,7 +384,10 @@ async function start() {
   $('#export-btn').addEventListener('click', exportData);
   $('#import-file').addEventListener('change', importData);
   $('#clear-btn').addEventListener('click', clearHistory);
-  $('#save-settings').addEventListener('click', saveSettings);
+  $('#set-outdir').addEventListener('change', () => saveSetting({ outputDir: $('#set-outdir').value.trim() || null }));
+  $('#set-browser').addEventListener('change', () => saveSetting({ cookieBrowser: $('#set-browser').value || null }));
+  $('#set-capture').addEventListener('change', () => saveSetting({ allowBrowserCapture: $('#set-capture').checked }));
+  $('#set-apikey').addEventListener('change', saveApiKey);
   $('#update-btn').addEventListener('click', updateCheck);
   $('#refresh-btn').addEventListener('click', () => loadStatus(true));
   bindQuickInput();
@@ -343,6 +395,7 @@ async function start() {
   const s = await loadStatus();
   initOptions(s?.settings.defaults ?? null);
   renderHistory();
+  if (matchMedia('(pointer:fine)').matches && !$('#legal').open) $('#url').focus();
 
   api.events(
     (msg) => {
@@ -357,8 +410,8 @@ async function start() {
       }
     },
     (connected) => {
-      if (!connected) setNote($('#global-note'), note('warn', 'Verbindung', 'Verbindung zum lokalen Server unterbrochen. Neuer Versuch läuft …'));
-      else if (state.status?.tools.ytdlp.ok) setNote($('#global-note'), null);
+      if (!connected) setNote($('#global-note'), note('warn', 'Verbindung', T.MSG.connectionLost));
+      else if (state.status) setNote($('#global-note'), missingNote(state.status));
     },
   );
 
