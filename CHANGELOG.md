@@ -10,6 +10,11 @@ Alle Neuerungen landen in einer neuen Version. Versionen heißen `DU-Rohr-Lader-
 Tag und Release legt `.github/workflows/release.yml` beim Merge nach `main` automatisch an,
 sobald `package.json` eine Version trägt, die es noch nicht als Tag gibt.
 
+## DU-Rohr-Lader-1.3.0 – 2026-10-29
+
+### Neu
+- `Starten.command`: Doppelklick im Finder startet den Server und öffnet die App im Browser. Läuft er schon, öffnet sich nur der Browser. Lässt sich in den Dock ziehen.
+
 ## DU-Rohr-Lader-1.2.0 – 2026-10-29
 
 ### Neu
