@@ -26,7 +26,12 @@ brew install node yt-dlp ffmpeg
 npm start
 ```
 
-Dann http://127.0.0.1:8787 öffnen (lässt sich als App installieren). Der Server nimmt nur Anfragen von
+Dann http://127.0.0.1:8787 öffnen (lässt sich als App installieren).
+
+**Per Doppelklick (macOS):** `Starten.command` im Finder doppelklicken. Das startet den Server und öffnet den Browser;
+läuft er schon, öffnet sich nur der Browser. Beenden: Terminal-Fenster schließen. Für den Dock die Datei auf den rechten
+Teil des Docks (neben den Papierkorb) ziehen. Sagt macOS beim ersten Mal „nicht verifizierter Entwickler“
+(nur nach ZIP-Download): Rechtsklick → Öffnen. Der Server nimmt nur Anfragen von
 127.0.0.1/localhost an. Einstellungen und Verlauf liegen in `~/Library/Application Support/YouTube-Downloader/`,
 Downloads standardmäßig in `~/Downloads/YouTube-Downloader/`.
 
