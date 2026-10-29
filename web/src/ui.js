@@ -87,10 +87,11 @@ export function renderMeta(m, strategy, picker = null) {
   if (T.LIVE[m.liveStatus]) tags.push(h('span', { class: 'tag' }, T.LIVE[m.liveStatus]));
   if (m.ageLimit >= 18) tags.push(h('span', { class: 'tag acc' }, 'ab 18'));
   if (m.license && /creative commons/i.test(m.license)) tags.push(h('span', { class: 'tag acc' }, 'CC-Lizenz'));
-  tags.push(h('span', { class: 'tag' }, `über ${T.STRATEGY[strategy]}`));
+  // Strategie nur nennen, wenn die App ausweichen musste; A ist der Normalfall.
+  if (strategy !== 'ytdlp') tags.push(h('span', { class: 'tag' }, `über ${T.STRATEGY[strategy]}`));
   const facts = [m.uploader, formatDuration(m.durationSec), formatDay(m.uploadDate)].filter(Boolean).join(' · ');
   const figure = m.thumbnailUrl
-    ? h('figure', {}, h('img', { class: 'media', src: m.thumbnailUrl, alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' }), h('figcaption', {}, h('b', {}, 'ABB. 01'), 'Vorschaubild'))
+    ? h('figure', {}, h('img', { class: 'media', src: m.thumbnailUrl, alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' }))
     : null;
   const warn = m.liveStatus === 'is_live' || m.liveStatus === 'is_upcoming' ? note('warn', 'Achtung', T.ERROR.live_not_finished[1]) : null;
   return h('div', { class: 'card' },
@@ -132,14 +133,17 @@ export function renderPicker(entries, selected, on) {
 /** Vorschau, was geladen wird (aus logic.pickFormats). */
 export function previewText(choice, options, hasFormats) {
   if (!hasFormats) return options.mode === 'audio' ? 'Bestes verfügbares Audio wird geladen.' : 'Bestes Video innerhalb der gewählten Grenzen wird geladen.';
-  const f = (x) => [x.height ? `${x.height}p` : null, x.ext, x.vcodec, x.acodec, x.abrKbps ? `${Math.round(x.abrKbps)} kbit/s` : null, x.sizeBytes ? formatBytes(x.sizeBytes) : null].filter(Boolean).join(' · ');
   if (!choice.video && !choice.audio) return 'Mit diesen Einstellungen passt kein Format.';
-  const parts = [];
-  if (choice.video) parts.push(`Video: ${f(choice.video)}`);
-  if (choice.audio) parts.push(`Audio: ${f(choice.audio)}`);
-  if (choice.merge) parts.push('wird per ffmpeg zusammengeführt');
-  if (choice.transcode) parts.push(`wird nach ${T.AUDIO_FORMAT[options.audioFormat]} umgewandelt`);
-  return `Voraussichtlich ${parts.join('; ')}.`;
+  const v = choice.video;
+  const a = choice.audio;
+  const converted = choice.transcode && options.audioFormat !== 'original';
+  const format = options.mode === 'video' ? T.CONTAINER[options.container] : converted ? T.AUDIO_FORMAT[options.audioFormat].split(' ')[0] : a.ext.toUpperCase();
+  const kbps = converted && options.audioBitrateKbps ? options.audioBitrateKbps : a?.abrKbps;
+  const quality = v?.height ? `${v.height}p` : kbps ? `${Math.round(kbps)} kbit/s` : null;
+  // Größe nur, wenn sie feststeht: nach einer Umwandlung ist sie anders.
+  const sizes = [v, a].filter(Boolean).map((x) => x.sizeBytes);
+  const size = !choice.transcode && sizes.every((b) => b) ? `etwa ${formatBytes(sizes.reduce((x, y) => x + y, 0))}` : null;
+  return `Voraussichtlich ${[quality ? `${quality} als ${format}` : `als ${format}`, size].filter(Boolean).join(', ')}.`;
 }
 
 /**
@@ -168,7 +172,7 @@ export function renderJob(job, on) {
       h('span', { class: 'job-title' }, job.title || job.url),
       h('span', { class: 'meta-tags' },
         h('span', { class: `tag${job.state === 'done' ? ' inv' : job.state === 'failed' ? ' acc' : ''}` }, T.STATE[job.state]),
-        job.strategy ? h('span', { class: 'tag' }, T.STRATEGY[job.strategy]) : null,
+        job.strategy && job.strategy !== 'ytdlp' ? h('span', { class: 'tag' }, T.STRATEGY[job.strategy]) : null,
         h('span', { class: 'tag' }, T.MODE[job.options.mode]),
       ),
     ),
@@ -187,7 +191,6 @@ export function renderHistoryRow(job, on) {
     h('td', { class: 'small' }, formatDate(job.finishedAt ?? job.createdAt)),
     h('td', { class: 'break' }, job.title || job.url, job.files[0] ? h('div', { class: 'small muted' }, job.files.length > 1 ? `${job.files.length} Dateien` : job.files[0].split('/').pop()) : null),
     h('td', {}, h('span', { class: `tag${job.state === 'done' ? ' inv' : ''}` }, T.STATE[job.state]), job.state === 'failed' ? h('div', { class: 'small muted' }, (T.ERROR[job.errorCode] ?? T.ERROR.unknown)[0]) : null),
-    h('td', { class: 'small' }, job.strategy ? T.STRATEGY[job.strategy] : ''),
     h('td', {}, job.state !== 'done' ? h('button', { class: 'btn', type: 'button', onclick: () => on.retry(job.id) }, 'Wiederholen') : job.files[0] ? fileAction(job.files[0], on, on.local ? 'Zeigen' : 'Laden') : null),
   );
 }

@@ -10,6 +10,26 @@ Alle Neuerungen landen in einer neuen Version. Versionen heißen `DU-Rohr-Lader-
 Tag und Release legt `.github/workflows/release.yml` beim Merge nach `main` automatisch an,
 sobald `package.json` eine Version trägt, die es noch nicht als Tag gibt.
 
+## DU-Rohr-Lader-1.2.0 – 2026-10-29
+
+### Neu
+- Schalter Hell/Dunkel/Auto oben rechts; die Wahl bleibt gespeichert.
+- Die App merkt sich beim Herunterladen die zuletzt gewählten Optionen (Video/Audio, Auflösung, Format) als Standard.
+- Nach „Herunterladen“ ist das URL-Feld gleich wieder leer und bereit für den nächsten Link.
+- Fehlt ein Programm, nennt der Hinweis genau dieses (z. B. nur yt-dlp) und bietet den passenden Befehl zum Kopieren an.
+
+### Geändert
+- Einstellungen speichern sofort beim Ändern, der Knopf „Speichern“ ist weg. Vorher legte „Speichern“ nebenbei auch die gerade gewählten Download-Optionen als Standard ab.
+- Weniger Technik im Blick: Cookies, API-Schlüssel, Aufnahme im Browser und die Programmliste stehen unter „Erweitert“ (zugeklappt). Die Strategie erscheint bei Videos und Aufträgen nur noch, wenn die App ausweichen musste; die Spalte „Strategie“ im Verlauf ist weg.
+- Einstieg: kleinerer Titel, größeres URL-Feld, das beim Start am Desktop schon den Cursor hat, darunter ein Tipp zu ⌘V, Ziehen und `/`.
+- Verständlichere Wörter: „Dateiformat“ statt Container, „Qualität“ statt Bitrate; die Vorschau sagt z. B. „1080p als MP4, etwa 129 MB“ statt Codec-Angaben.
+- Telefon: Tab-Leiste unten in normaler Schrift statt winziger Versalien.
+- Verlauf: Exportieren, Importieren und Leeren unter „Sichern und leeren“; leerer Verlauf zeigt nur einen Satz. „Verlauf leeren“ fragt im Stil der App statt mit dem Browser-Fenster.
+- Beschriftung „ABB. 01“ unter dem Vorschaubild entfernt.
+
+### Aufgeräumt
+- Unbenutzte CSS-Klasse `.grid` entfernt; Meldungen aus `main.js` stehen jetzt in `texts.js`.
+
 ## DU-Rohr-Lader-1.1.0 – 2026-10-24
 
 ### Neu

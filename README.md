@@ -18,7 +18,7 @@ brew install node yt-dlp ffmpeg
 - yt-dlp (getestet mit 2026.08.19) und ffmpeg/ffprobe.
 - Optional für Strategie D (Aufnahme im Browser): `npm install playwright && npx playwright install chromium`.
   Mit `CAPTURE_CHANNEL=chrome` wird stattdessen dein installiertes Chrome verwendet.
-- Optional für Strategie C: ein API-Schlüssel der YouTube Data API v3 (in der App unter Einstellungen oder als `YOUTUBE_API_KEY`).
+- Optional für Strategie C: ein API-Schlüssel der YouTube Data API v3 (in der App unter Einstellungen → Erweitert oder als `YOUTUBE_API_KEY`).
 
 ## Starten
 
