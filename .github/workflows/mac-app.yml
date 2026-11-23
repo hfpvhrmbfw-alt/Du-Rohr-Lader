@@ -1,0 +1,57 @@
+# Baut die Mac-App (mac/build.sh) für Apple Silicon und Intel und prüft, ob sie startet.
+# Bei Pull Requests liegen die .zip-Dateien als Artefakt am Lauf; beim Release (Aufruf aus release.yml)
+# hängt der Lauf sie an das GitHub-Release.
+name: Mac-App
+
+on:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm64, x86_64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bauen
+        run: mac/build.sh ${{ matrix.arch }}
+
+      - name: Startprobe (App öffnen, Server und Programme prüfen, beenden)
+        if: matrix.arch == 'arm64'
+        run: |
+          open dist/arm64/DU-Rohr-Lader.app
+          for _ in $(seq 1 60); do curl -fs http://127.0.0.1:8787/api/status -o status.json && break; sleep 1; done
+          jq '{ytdlp: .tools.ytdlp, ffmpeg: .tools.ffmpeg}' status.json
+          jq -e '.tools.ytdlp.ok and .tools.ffmpeg.ok' status.json
+          pkill -TERM -x DU-Rohr-Lader
+          for _ in $(seq 1 20); do curl -fs http://127.0.0.1:8787/api/status >/dev/null || break; sleep 0.5; done
+          if curl -fs http://127.0.0.1:8787/api/status >/dev/null; then echo "Server läuft nach dem Beenden weiter"; exit 1; fi
+          echo "App startet, findet yt-dlp und ffmpeg und beendet den Server mit."
+
+      - name: Protokoll bei Fehler
+        if: failure()
+        run: cat "$HOME/Library/Application Support/YouTube-Downloader/app.log" || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DU-Rohr-Lader-mac-${{ matrix.arch }}
+          path: dist/*.zip
+          if-no-files-found: error
+
+      - name: An das Release hängen
+        if: ${{ inputs.tag }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ inputs.tag }}" dist/*.zip --clobber --repo "${{ github.repository }}"

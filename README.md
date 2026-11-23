@@ -8,7 +8,26 @@ Für die Rechte an den Inhalten ist der Nutzer selbst verantwortlich.
 
 Plan und Schichten: [docs/PLAN.md](docs/PLAN.md) · Rust-Portierung: [docs/RUST.md](docs/RUST.md)
 
-## Voraussetzungen (macOS)
+## Mac-App (empfohlen)
+
+Die einfachste Art: die fertige App, sie bringt yt-dlp, ffmpeg und Node.js selbst mit.
+
+1. Auf der [Release-Seite](https://github.com/hfpvhrmbfw-alt/du-rohr-lader/releases/latest) die passende Datei laden:
+   `…-mac-apple-silicon.zip` (M1 und neuer) oder `…-mac-intel.zip` (ältere Macs). Welcher Mac: Apfel-Menü → Über diesen Mac → Chip.
+2. Doppelklick auf die .zip, `DU-Rohr-Lader.app` in den Ordner „Programme“ ziehen.
+3. Beim ersten Öffnen warnt macOS, weil die App nicht bei Apple registriert ist. Dann Systemeinstellungen →
+   Datenschutz & Sicherheit → ganz unten bei „DU-Rohr-Lader“ auf „Dennoch öffnen“. Danach startet sie normal.
+   Falls das nicht hilft, einmal im Terminal: `xattr -dr com.apple.quarantine /Applications/DU-Rohr-Lader.app`
+
+Die App hat ein eigenes Fenster und ein Symbol in der Menüleiste (Pfeil im Kreis). Fenster schließen lässt
+die App weiterlaufen (für laufende Downloads und das iPhone), beenden über die Menüleiste oder ⌘Q.
+In der Menüleiste: Downloads-Ordner öffnen, iPhone und iPad erlauben (statt `YTD_LAN=1`), yt-dlp aktualisieren,
+Server neu starten. Protokoll bei Problemen: `~/Library/Application Support/YouTube-Downloader/app.log`.
+
+Selbst bauen (auf einem Mac mit Xcode): `mac/build.sh arm64` bzw. `mac/build.sh x86_64`, Ergebnis in `dist/`.
+GitHub baut die App bei jedem Pull Request und hängt sie bei jeder neuen Version an das Release (`.github/workflows/mac-app.yml`).
+
+## Voraussetzungen (ohne App, macOS)
 
 ```
 brew install node yt-dlp ffmpeg

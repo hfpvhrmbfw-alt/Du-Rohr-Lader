@@ -13,6 +13,8 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.publish.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,6 +28,7 @@ jobs:
         run: npm test
 
       - name: Fehlende Versionen taggen und veröffentlichen
+        id: publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -50,4 +53,13 @@ jobs:
             git tag -a "$tag" -m "$tag" "$commit"
             git push origin "$tag"
             gh release create "$tag" --title "$tag" --notes-file notes.md --verify-tag
+            echo "tag=$tag" >> "$GITHUB_OUTPUT"
           done
+
+  # Neueste neue Version bekommt die Mac-App als Anhang (DU-Rohr-Lader-x.y.z-mac-apple-silicon.zip / -intel.zip).
+  mac-app:
+    needs: release
+    if: needs.release.outputs.tag != ''
+    uses: ./.github/workflows/mac-app.yml
+    with:
+      tag: ${{ needs.release.outputs.tag }}
