@@ -28,6 +28,7 @@ import { createJobManager } from './jobs.js';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PORT = Number(process.env.PORT || 8787);
 const LAN = process.env.YTD_LAN === '1';
+const IN_APP = process.env.YTD_APP === '1'; // gestartet von der Mac-App (mac/), die yt-dlp selbst aktualisiert
 const HOST = LAN ? '0.0.0.0' : '127.0.0.1';
 const DATA_DIR = process.env.YTD_DATA_DIR || (platform() === 'darwin' ? join(homedir(), 'Library', 'Application Support', 'YouTube-Downloader') : join(homedir(), '.local', 'share', 'youtube-downloader'));
 const DEFAULT_OUT = join(homedir(), 'Downloads', 'YouTube-Downloader');
@@ -243,7 +244,7 @@ const routes = {
     const latest = await fetchLatestYtDlp(http);
     if (!latest.ok) return send(res, 200, { ok: false, errorCode: latest.errorCode, installed: installed.version });
     const newer = installed.version ? isNewerVersion(installed.version, latest.latest) : null;
-    send(res, 200, { ok: true, installed: installed.version, latest: latest.latest, updateAvailable: newer, url: latest.url });
+    send(res, 200, { ok: true, installed: installed.version, latest: latest.latest, updateAvailable: newer, url: latest.url, inApp: IN_APP });
   },
 
   'GET /api/file': async (req, res, url) => {
@@ -337,3 +338,20 @@ server.listen(PORT, HOST, () => {
   if (LAN) console.log(`Heimnetz an (YTD_LAN=1). iPhone koppeln: ${access.pairUrls()[0] ?? '–'} (QR-Code unter Einstellungen)`);
   console.log(`Daten: ${DATA_DIR}`);
 });
+
+// Beenden (Mac-App, ctrl C, kill): laufende Downloads abbrechen, damit kein yt-dlp weiterläuft.
+const shutdown = () => {
+  for (const job of jobs.list()) jobs.cancel(job.id);
+  server.close();
+  setTimeout(() => process.exit(0), 500).unref();
+};
+process.once('SIGTERM', shutdown);
+process.once('SIGINT', shutdown);
+
+// Von der Mac-App gestartet: mit ihr enden, auch wenn sie abstürzt.
+const parent = Number(process.env.YTD_PARENT_PID);
+if (parent > 0) {
+  setInterval(() => {
+    try { process.kill(parent, 0); } catch { shutdown(); }
+  }, 2000).unref();
+}

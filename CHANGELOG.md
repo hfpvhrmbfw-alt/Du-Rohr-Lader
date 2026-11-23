@@ -10,6 +10,17 @@ Alle Neuerungen landen in einer neuen Version. Versionen heißen `DU-Rohr-Lader-
 Tag und Release legt `.github/workflows/release.yml` beim Merge nach `main` automatisch an,
 sobald `package.json` eine Version trägt, die es noch nicht als Tag gibt.
 
+## DU-Rohr-Lader-1.4.0 – 2026-11-23
+
+### Neu
+- Mac-App `DU-Rohr-Lader.app` mit eigenem Fenster und Symbol in der Menüleiste, kein Terminal mehr nötig. Sie bringt yt-dlp, ffmpeg und Node.js mit, `brew install` entfällt. Liegt für Apple Silicon und Intel als .zip am Release.
+- Menüleiste: Fenster öffnen, Downloads-Ordner öffnen, im Browser öffnen, iPhone und iPad erlauben (merkt sich die Wahl), yt-dlp aktualisieren, Server neu starten.
+- yt-dlp lässt sich in der App mit einem Klick aktualisieren; die Update-Prüfung in den Einstellungen verweist dann darauf statt auf brew.
+- GitHub baut die App bei jedem Pull Request, prüft, ob sie startet und yt-dlp und ffmpeg findet, und hängt sie bei jeder neuen Version an das Release.
+
+### Geändert
+- Beim Beenden des Servers (App beenden, ctrl C im Terminal) werden laufende Downloads abgebrochen, statt im Hintergrund weiterzulaufen.
+
 ## DU-Rohr-Lader-1.3.0 – 2026-10-29
 
 ### Neu

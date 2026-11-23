@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Erzeugt die PNG-Icons (iOS-Home-Bildschirm, Android/Chrome) aus web/icons/icon.svg.
+// Erzeugt die PNG-Icons (iOS-Home-Bildschirm, Android/Chrome, Mac-App) aus web/icons/icon.svg.
 // Nach jeder Änderung am SVG neu ausführen: node scripts/icons.js  (braucht Playwright mit Chromium)
 
 import { readFile } from 'node:fs/promises';
@@ -21,4 +21,9 @@ for (const [name, size, pad] of SIZES) {
   await page.screenshot({ path: new URL(name, dir).pathname, omitBackground: false });
   console.log(name, `${size}×${size}`);
 }
+// Mac-App: 1024er-Raster mit abgerundetem Quadrat (824 px, Rand 100 px) wie bei macOS-Symbolen üblich, Rest transparent.
+await page.setViewportSize({ width: 1024, height: 1024 });
+await page.setContent(`<style>html,body{margin:0;background:transparent}div{position:absolute;left:100px;top:100px;width:824px;height:824px;border-radius:185px;overflow:hidden;background:${bg}}svg{display:block;width:100%;height:100%}</style><div>${svg}</div>`);
+await page.screenshot({ path: new URL('../../mac/AppIcon.png', dir).pathname, omitBackground: true });
+console.log('mac/AppIcon.png', '1024×1024');
 await browser.close();

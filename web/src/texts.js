@@ -126,6 +126,7 @@ export const MSG = {
   updateChecking: 'Prüfe …',
   updateUnreachable: 'Die neueste Version konnte nicht abgefragt werden (GitHub nicht erreichbar).',
   updateAvailable: (latest, installed) => `yt-dlp ${latest} ist verfügbar (installiert: ${installed}). Aktualisieren mit `,
+  updateInApp: 'dem Symbol in der Menüleiste → „yt-dlp aktualisieren“.',
   upToDate: (v) => `yt-dlp ${v} ist die neueste Version.`,
 };
 

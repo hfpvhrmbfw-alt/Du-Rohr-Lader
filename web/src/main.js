@@ -278,6 +278,7 @@ async function updateCheck() {
   const d = r.data;
   if (!d?.ok) return setNote($('#update-note'), note('warn', 'Update', T.MSG.updateUnreachable));
   if (d.updateAvailable) {
+    if (d.inApp) return setNote($('#update-note'), note('warn', 'Update', T.MSG.updateAvailable(d.latest, d.installed), T.MSG.updateInApp));
     return setNote($('#update-note'), note('warn', 'Update', T.MSG.updateAvailable(d.latest, d.installed), h('code', {}, 'brew upgrade yt-dlp'), ' oder ', h('code', {}, 'yt-dlp -U'), '.'));
   }
   setNote($('#update-note'), note('ok', 'Aktuell', T.MSG.upToDate(d.installed)));

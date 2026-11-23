@@ -19,3 +19,6 @@ Thumbs.db
 .vscode/
 *.log
 coverage/
+
+# Mac-App-Bau
+dist/
