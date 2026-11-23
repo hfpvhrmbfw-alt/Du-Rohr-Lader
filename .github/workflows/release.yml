@@ -50,9 +50,16 @@ jobs:
               on && /^## / { exit }
               on { print }
             ' CHANGELOG.md > notes.md
+            # Ändert der Versions-Commit eine Workflow-Datei, lehnt GitHub den Tag-Push mit GITHUB_TOKEN ab
+            # („without workflows permission“). Dann den Tag über das Release anlegen lassen; geht auch das
+            # nicht, nur warnen, damit spätere Versionen trotzdem ihr Release bekommen.
             git tag -a "$tag" -m "$tag" "$commit"
-            git push origin "$tag"
-            gh release create "$tag" --title "$tag" --notes-file notes.md --verify-tag
+            if git push origin "$tag"; then
+              gh release create "$tag" --title "$tag" --notes-file notes.md --verify-tag
+            elif ! gh release create "$tag" --title "$tag" --notes-file notes.md --target "$commit"; then
+              echo "::warning::$tag ließ sich nicht anlegen (Versions-Commit ändert einen Workflow), übersprungen."
+              continue
+            fi
             echo "tag=$tag" >> "$GITHUB_OUTPUT"
           done
 
