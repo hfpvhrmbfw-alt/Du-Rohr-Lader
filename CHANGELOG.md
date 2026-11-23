@@ -10,6 +10,11 @@ Alle Neuerungen landen in einer neuen Version. Versionen heißen `DU-Rohr-Lader-
 Tag und Release legt `.github/workflows/release.yml` beim Merge nach `main` automatisch an,
 sobald `package.json` eine Version trägt, die es noch nicht als Tag gibt.
 
+## DU-Rohr-Lader-1.4.1 – 2026-11-23
+
+### Behoben
+- Release 1.4.0 und damit die Mac-App fehlten: GitHub lehnte den Tag ab, weil die Version eine Workflow-Datei mitbrachte. Der Release-Lauf weicht jetzt aus und überspringt eine solche Version mit Warnung, statt ganz abzubrechen. Die Mac-App hängt ab dieser Version am Release.
+
 ## DU-Rohr-Lader-1.4.0 – 2026-11-23
 
 ### Neu
